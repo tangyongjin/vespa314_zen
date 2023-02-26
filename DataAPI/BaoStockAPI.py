@@ -1,9 +1,13 @@
 import baostock as bs
-
 from Common.CEnum import AUTYPE, DATA_FIELD, KL_TYPE
 from Common.CTime import CTime
 from Common.func_util import kltype_lt_day, str2float
 from KLine.KLine_Unit import CKLine_Unit
+import pandas as pd
+import copy
+import pprint
+from Tools.DebugTool import cprint
+from IPython.display import Markdown
 
 from .CommonStockAPI import CCommonStockApi
 
@@ -54,6 +58,22 @@ def GetColumnNameFromFieldList(fileds: str):
     return [_dict[x] for x in fileds.split(",")]
 
 
+def printRawLineData(rs):
+        
+        cprint('BaoStockAPI.py:62 >>>>>>>>>>>>>>>>>>>##### 打印结果集 ####<<<<<<<<<<<<<<<<')
+        data_list = []
+        while (rs.error_code == '0') & rs.next():
+            # 获取一条记录，将记录合并在一起
+            data_list.append(rs.get_row_data())
+        result = pd.DataFrame(data_list, columns=rs.fields)
+        
+        
+        pd.set_option('display.max_columns', None)
+        pd.set_option('display.width', 10000)
+        cprint(result    )
+        pass
+
+
 class CBaoStock(CCommonStockApi):
     is_connect = None
 
@@ -77,10 +97,17 @@ class CBaoStock(CCommonStockApi):
             frequency=self.__convert_type(),
             adjustflag=autype_dict[self.autype],
         )
+        
+        RawRs = copy.deepcopy(rs)
+
+        printRawLineData(RawRs )
+        
         if rs.error_code != '0':
             raise Exception(rs.error_msg)
         while rs.error_code == '0' and rs.next():
             yield CKLine_Unit(create_item_dict(rs.get_row_data(), GetColumnNameFromFieldList(fields)))
+
+ 
 
     def SetBasciInfo(self):
         rs = bs.query_stock_basic(code=self.code)
@@ -93,7 +120,9 @@ class CBaoStock(CCommonStockApi):
     @classmethod
     def do_init(cls):
         if not cls.is_connect:
+            # cls.is_connect = bs.login()
             cls.is_connect = bs.login()
+            
 
     @classmethod
     def do_close(cls):

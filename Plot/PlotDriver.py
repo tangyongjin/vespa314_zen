@@ -1,15 +1,13 @@
 import inspect
 from typing import Dict, List, Optional, Tuple, Union
-
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.patches import Rectangle
-
+from Tools.DebugTool import cprint
 from Chan import CChan
 from Common.CEnum import BI_DIR, FX_TYPE, KL_TYPE, KLINE_DIR, TREND_TYPE
 from Common.ChanException import CChanException, ErrCode
-
 from .PlotMeta import CBi_meta, CChanPlotMeta, CZS_meta
 
 
@@ -102,12 +100,20 @@ def create_figure(plot_macd: Dict[KL_TYPE, bool], figure_config, lv_lst: List[KL
             total_h += h
             gridspec_kw.append(1)
             sub_pic_cnt += 1
+    
+    plt.rcParams['font.sans-serif']=['SimHei'] #用来正常显示中文标签
+    plt.rcParams['axes.unicode_minus'] = False #用来正常显示负号
+    # plt.title(u"Zen-K汉字")        
+    plt.style.use('ggplot')
+    
     figure, axes = plt.subplots(
         sub_pic_cnt,
         1,
         figsize=(w, total_h),
         gridspec_kw={'height_ratios': gridspec_kw}
     )
+    
+    
     try:
         axes[0]
     except Exception:  # 只有一个级别，且不需要画macd
@@ -152,6 +158,8 @@ def GetPlotMeta(chan: CChan, figure_config) -> List[CChanPlotMeta]:
 
 class CPlotDriver:
     def __init__(self, chan: CChan, plot_config: Union[str, dict, list] = '', plot_para=None):
+        cprint("PlotDriver.py:156, init-->plot_para")
+        print(plot_para)
         if plot_para is None:
             plot_para = {}
         figure_config: dict = plot_para.get('figure', {})
@@ -159,6 +167,8 @@ class CPlotDriver:
         plot_config = parse_plot_config(plot_config, chan.lv_list)
         plot_metas = GetPlotMeta(chan, figure_config)
         self.lv_lst = chan.lv_list[:len(plot_metas)]
+
+        cprint("PlotDriver.py:164,初始化plot_driver")
 
         x_range = self.GetRealXrange(figure_config, plot_metas[0])
         plot_macd: Dict[KL_TYPE, bool] = {kl_type: conf.get("plot_macd", False) for kl_type, conf in plot_config.items()}
@@ -175,7 +185,8 @@ class CPlotDriver:
             ax = axes[lv][0]
             ax_macd = None if len(axes[lv]) == 1 else axes[lv][1]
             set_grid(ax, figure_config.get("grid", "xy"))
-            ax.set_title(f"{chan.code}/{lv.name.split('K_')[1]}", fontsize=16, loc='left', color='r')
+            # 设置标题位置,颜色
+            ax.set_title(f"{chan.code}/{lv.name.split('K_')[1]}", fontsize=16, loc='center', color='r')
 
             x_limits = cal_x_limit(meta, x_range)
             if lv != self.lv_lst[0]:
@@ -188,7 +199,7 @@ class CPlotDriver:
                 set_x_tick(ax_macd, x_limits, meta.datetick)
             self.y_min, self.y_max = cal_y_range(meta, ax)  # 需要先设置 x_tick后计算
 
-            self.DrawElement(plot_config[lv], meta, ax, lv, plot_para, ax_macd, x_limits)
+            self.DrawSubFig(plot_config[lv], meta, ax, lv, plot_para, ax_macd, x_limits)
 
             if lv != self.lv_lst[-1]:
                 sseg_begin = meta.sub_last_kseg_start_idx(slv_seg_cnt)
@@ -231,11 +242,18 @@ class CPlotDriver:
             return x_range
         return x_range
 
-    def DrawElement(self, plot_config: Dict[str, bool], meta, ax: Axes, lv, plot_para, ax_macd: Optional[Axes], x_limits):
+    def DrawSubFig(self, plot_config: Dict[str, bool], meta, ax: Axes, lv, plot_para, ax_macd: Optional[Axes], x_limits):
+        cprint("PlotDriver.py:238,绘制元素, plot_config.get(某项配置,缺省False)  ")
+        cprint('plot_config type:' +type (plot_config).__name__ )
+        print(plot_config)
+        cprint('plot_para type:'+ type (plot_para).__name__)
+        print( plot_para) 
+        cprint("debug-End")
+         
         if plot_config.get("plot_kline", False):
             self.draw_klu(meta, ax, **plot_para.get('kl', {}))
         if plot_config.get("plot_kline_combine", False):
-            self.draw_klc(meta, ax, **plot_para.get('klc', {}))
+            self.draw_klc(meta, ax, **plot_para.get('klc', {}) )
         if plot_config.get("plot_bi", False):
             self.draw_bi(meta, ax, lv, **plot_para.get('bi', {}))
         if plot_config.get("plot_seg", False):
@@ -273,6 +291,7 @@ class CPlotDriver:
         plt.savefig(path, bbox_inches='tight')
 
     def draw_klu(self, meta: CChanPlotMeta, ax: Axes, width=0.4, rugd=True, plot_mode="kl"):
+        cprint ("PlotDriver.py: 288,绘制K线图")
         # rugd: red up green down
         up_color = 'r' if rugd else 'g'
         down_color = 'g' if rugd else 'r'
@@ -326,6 +345,8 @@ class CPlotDriver:
                     fill=False,
                     color=color_type[klc_meta.type]))
 
+
+    # 画笔
     def draw_bi(
         self,
         meta: CChanPlotMeta,
@@ -333,14 +354,18 @@ class CPlotDriver:
         lv,
         color='black',
         show_num=False,
+        # show_num=True,
+        
         num_color="red",
         sub_lv_cnt=None,
         facecolor='green',
         alpha=0.1,
         disp_end=False,
+        # disp_end=True,
         end_color='black',
         end_fontsize=10,
     ):
+        cprint("画笔>>>draw_bi")
         x_begin = ax.get_xlim()[0]
         for bi_idx, bi in enumerate(meta.bi_list):
             if bi.end_x < x_begin:
@@ -488,6 +513,7 @@ class CPlotDriver:
             for sub_zs_meta in zs_meta.sub_zs_lst:
                 ax.add_patch(Rectangle((sub_zs_meta.begin, sub_zs_meta.low), sub_zs_meta.w, sub_zs_meta.h, fill=False, color=color, linewidth=sub_linewidth, linestyle=line_style))
 
+    # 画 MACD 
     def draw_macd(self, meta: CChanPlotMeta, ax: Axes, x_limits, width=0.4):
         macd_lst = [klu.macd for klu in meta.klu_iter()]
         assert macd_lst[0] is not None, "you can't draw macd until you delete macd_metric=False"
@@ -677,3 +703,4 @@ def add_zs_text(ax: Axes, zs_meta: CZS_meta, fontsize, text_color):
         verticalalignment="bottom",
         horizontalalignment='center',
     )
+    

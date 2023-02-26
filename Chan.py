@@ -1,7 +1,11 @@
 import datetime
 from collections import defaultdict
 from typing import Dict, Iterable, List, Optional, Union
+from inspect import getmembers
+from pprint import pprint
+from Tools.DebugTool import cprint
 
+import pprint
 from BuySellPoint.BS_Point import CBS_Point
 from ChanConfig import CChanConfig
 from Common.CEnum import AUTYPE, DATA_SRC, KL_TYPE
@@ -68,7 +72,12 @@ class CChan:
             self.kl_datas[self.lv_list[idx]] = CKLine_List(self.lv_list[idx], conf=self.conf)
 
     def load_stock_data(self, stockapi_instance: CCommonStockApi, lv) -> Iterable[CKLine_Unit]:
-        for KLU_IDX, klu in enumerate(stockapi_instance.get_kl_data()):
+        stock_data=stockapi_instance.get_kl_data()
+        cprint("Chan.py:75 stock_data>>>>>>>>>>>>>>>>>")
+        cprint(stock_data)
+        cprint("Chan.py:77 <<<<<<<<<<<<<<<<<<<<<")
+        
+        for KLU_IDX, klu in enumerate( stock_data):
             klu.set_idx(KLU_IDX)
             klu.kl_type = lv
             yield klu
@@ -111,7 +120,7 @@ class CChan:
             except CChanException as e:
                 if e.errcode == ErrCode.SRC_DATA_NOT_FOUND and self.conf.auto_skip_illegal_sub_lv:
                     if self.conf.print_warming:
-                        print(f"[WARMING-{self.code}]{lv}级别获取数据失败，跳过")
+                        print( "Chan.py:75", f"[WARMING-{self.code}]{lv}级别获取数据失败，跳过")
                     del self.kl_datas[lv]
                     continue
                 raise e
@@ -120,12 +129,18 @@ class CChan:
 
     def load(self, step=False):
         stockapi_cls = GetStockAPI(self.data_src)
+        cprint("Chan.py:131--------------------------")
+        print("Chan.py:132:data_src",self.data_src)
+        print("Chan.py:133:stockapi_cls",stockapi_cls)
+        
         try:
             stockapi_cls.do_init()
             lv_klu_iter_lst = self.init_lv_klu_iter(stockapi_cls)
             self.klu_cache: List[Optional[CKLine_Unit]] = [None for _ in self.lv_list]
+            cprint("Chan.py:139--------------------------")
+            print(self.klu_cache)
             self.klu_last_t = [CTime(1980, 1, 1, 0, 0) for _ in self.lv_list]
-
+            
             yield from self.load_iterator(lv_idx=0, lv_klu_iter_lst=lv_klu_iter_lst, parent_klu=None, step=step)  # 计算入口
             if not step:  # 非回放模式全部算完之后才算一次中枢和线段
                 for lv in self.lv_list:
