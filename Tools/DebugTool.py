@@ -24,11 +24,15 @@ def cprint(pobj):
                 print(Fore.GREEN )
                 print(  len(pobj))
                 print ('\n'.join([ str(myelement) for myelement in pobj ]))
+         
+         
+         
+          if  type(pobj).__name__ == 'CSeg_meta':
+                print("CSeg_meta")
+                print(vars(pobj))
+ 
 
-                # print(pobj[0:])
-                # print(Fore.GREEN) 
-                # print(Style.RESET_ALL)      
-                    
+                     
         
          
           

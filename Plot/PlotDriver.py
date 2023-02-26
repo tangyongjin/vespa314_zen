@@ -103,7 +103,8 @@ def create_figure(plot_macd: Dict[KL_TYPE, bool], figure_config, lv_lst: List[KL
     
     plt.rcParams['font.sans-serif']=['SimHei'] #用来正常显示中文标签
     plt.rcParams['axes.unicode_minus'] = False #用来正常显示负号
-    # plt.title(u"Zen-K汉字")        
+    # plt.title(u"Zen-K汉字")
+    # 设置 style 
     plt.style.use('ggplot')
     
     figure, axes = plt.subplots(
@@ -385,12 +386,14 @@ class CPlotDriver:
             x_end = int(ax.get_xlim()[1])
             ax.fill_between(range(begin_idx, x_end + 1), y_begin, y_end, facecolor=facecolor, alpha=alpha)
 
+
+    # 画线段 
     def draw_seg(
         self,
         meta: CChanPlotMeta,
         ax: Axes,
         lv,
-        width=5,
+        width=3,
         color="g",
         sub_lv_cnt=None,
         facecolor='green',
@@ -400,13 +403,24 @@ class CPlotDriver:
         end_fontsize=13,
     ):
         x_begin = ax.get_xlim()[0]
+        
+        cprint("画线段>>>draw_seg")
+        print(meta.seg_list)
+        
+        # for seg_idx, seg_meta in enumerate(meta.seg_list):
+        #     # cprint( seg_meta)
+        #     print( type(seg_meta)   )
 
         for seg_idx, seg_meta in enumerate(meta.seg_list):
+            
+            cprint(  seg_meta)
             if seg_meta.end_x < x_begin:
                 continue
             if seg_meta.is_sure:
+                # 已经确定,划实线
                 ax.plot([seg_meta.begin_x, seg_meta.end_x], [seg_meta.begin_y, seg_meta.end_y], color=color, linewidth=width)
             else:
+                # 未确定,划虚线
                 ax.plot([seg_meta.begin_x, seg_meta.end_x], [seg_meta.begin_y, seg_meta.end_y], color=color, linewidth=width, linestyle='dashed')
             if disp_end:
                 bi_text(seg_idx, ax, seg_meta, end_fontsize, end_color)
