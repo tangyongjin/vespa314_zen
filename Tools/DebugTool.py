@@ -31,8 +31,11 @@ def cprint(pobj):
                 print("CSeg_meta")
                 print(vars(pobj))
  
-
-                     
+          if  type(pobj).__name__ == 'CBS_Point':
+                print("CBS_Point")
+                print(vars(pobj))
+ 
+                      
         
          
           
