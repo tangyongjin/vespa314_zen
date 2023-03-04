@@ -170,8 +170,9 @@ class CPlotDriver:
             i = kl.idx
             # print("------------>>")
             # cprint( kl)
-            kXdata.append(kl.time)
-            kYdata.append([kl.open,kl.close,kl.high,kl.low])
+            # print( kl.time.to_str()) 
+            kXdata.append(kl.time.to_str())
+            kYdata.append([kl.open, kl.close,kl.low,kl.high,kl.low])
         
         for kl in meta.klu_iter():
             i = kl.idx
