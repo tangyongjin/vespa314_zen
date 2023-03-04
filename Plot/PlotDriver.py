@@ -11,151 +11,6 @@ from Common.ChanException import CChanException, ErrCode
 from .PlotMeta import CBi_meta, CChanPlotMeta, CZS_meta
 
 
-def reformat_plot_config(plot_config: Dict[str, bool]):
-    """
-    兼容不填写`plot_`前缀的情况
-    """
-    def _format(s):
-        return s if s.startswith("plot_") else f"plot_{s}"
-
-    return {_format(k): v for k, v in plot_config.items()}
-
-
-def parse_single_lv_plot_config(plot_config: Union[str, dict, list]) -> Dict[str, bool]:
-    """
-    返回单一级别的plot_config配置
-    """
-    if isinstance(plot_config, dict):
-        return reformat_plot_config(plot_config)
-    elif isinstance(plot_config, str):
-        return reformat_plot_config(dict([(k.strip().lower(), True) for k in plot_config.split(",")]))
-    elif isinstance(plot_config, list):
-        return reformat_plot_config(dict([(k.strip().lower(), True) for k in plot_config]))
-    else:
-        raise CChanException("plot_config only support list/str/dict", ErrCode.PLOT_ERR)
-
-
-def parse_plot_config(plot_config: Union[str, dict, list], lv_list: List[KL_TYPE]) -> Dict[KL_TYPE, Dict[str, bool]]:
-    """
-    支持：
-        - 传入字典
-        - 传入字符串，逗号分割
-        - 传入数组，元素为各个需要画的笔的元素
-        - 传入key为各个级别的字典
-        - 传入key为各个级别的字符串
-        - 传入key为各个级别的数组
-    """
-    if isinstance(plot_config, dict):
-        if all(isinstance(_key, str) for _key in plot_config.keys()):  # 单层字典
-            return {lv: parse_single_lv_plot_config(plot_config) for lv in lv_list}
-        elif all(isinstance(_key, KL_TYPE) for _key in plot_config.keys()):  # key为KL_TYPE
-            for lv in lv_list:
-                assert lv in plot_config
-            return {lv: parse_single_lv_plot_config(plot_config[lv]) for lv in lv_list}
-        else:
-            raise CChanException("plot_config if is dict, key must be str/KL_TYPE", ErrCode.PLOT_ERR)
-    return {lv: parse_single_lv_plot_config(plot_config) for lv in lv_list}
-
-
-def set_x_tick(ax, x_limits, tick):
-    ax.set_xlim(x_limits[0], x_limits[1]+1)
-    ax.set_xticks(range(x_limits[0], x_limits[1], max([1, int((x_limits[1]-x_limits[0])/10)])))
-    ax.set_xticklabels([tick[i] for i in ax.get_xticks()], rotation=20)
-
-
-def cal_y_range(meta: CChanPlotMeta, ax):
-    x_begin = ax.get_xlim()[0]
-    y_min = float("inf")
-    y_max = float("-inf")
-    for klc_meta in meta.klc_list:
-        if klc_meta.klu_list[-1].idx < x_begin:
-            continue  # 不绘制范围外的
-        if klc_meta.high > y_max:
-            y_max = klc_meta.high
-        if klc_meta.low < y_min:
-            y_min = klc_meta.low
-    return (y_min, y_max)
-
-
-def create_figure(plot_macd: Dict[KL_TYPE, bool], figure_config, lv_lst: List[KL_TYPE]) -> Tuple[Figure, Dict[KL_TYPE, List[Axes]]]:
-    """
-    返回：
-        - Figure
-        - Dict[KL_TYPE, List[Axes]]: 如果Axes长度为1, 说明不需要画macd, 否则需要
-    """
-    default_w, default_h = 24, 10
-    macd_h_ration = figure_config.get('macd_h', 0.3)
-    w = figure_config.get('w', default_w)
-    h = figure_config.get('h', default_h)
-
-    total_h = 0
-    gridspec_kw = []
-    sub_pic_cnt = 0
-    for lv in lv_lst:
-        if plot_macd[lv]:
-            total_h += h*(1+macd_h_ration)
-            gridspec_kw.extend((1, macd_h_ration))
-            sub_pic_cnt += 2
-        else:
-            total_h += h
-            gridspec_kw.append(1)
-            sub_pic_cnt += 1
-    
-    plt.rcParams['font.sans-serif']=['SimHei'] #用来正常显示中文标签
-    plt.rcParams['axes.unicode_minus'] = False #用来正常显示负号
-    # plt.title(u"Zen-K汉字")
-    # 设置 style 
-    plt.style.use('ggplot')
-    
-    figure, axes = plt.subplots(
-        sub_pic_cnt,
-        1,
-        figsize=(w, total_h),
-        gridspec_kw={'height_ratios': gridspec_kw}
-    )
-    
-    
-    try:
-        axes[0]
-    except Exception:  # 只有一个级别，且不需要画macd
-        axes = [axes]
-
-    axes_dict: Dict[KL_TYPE, List[Axes]] = {}
-    idx = 0
-    for lv in lv_lst:
-        if plot_macd[lv]:
-            axes_dict[lv] = axes[idx: idx+2]  # type: ignore
-            idx += 2
-        else:
-            axes_dict[lv] = [axes[idx]]  # type: ignore
-            idx += 1
-    assert idx == len(axes)
-    return figure, axes_dict
-
-
-def cal_x_limit(meta: CChanPlotMeta, x_range):
-    X_LEN = meta.klu_len
-    return [X_LEN - x_range, X_LEN - 1] if x_range and X_LEN > x_range else [0, X_LEN - 1]
-
-
-def set_grid(ax, config):
-    if config is None:
-        return
-    if config == "xy":
-        ax.grid(True)
-        return
-    if config in ("x", "y"):
-        ax.grid(True, axis=config)
-        return
-    raise CChanException(f"unsupport grid config={config}", ErrCode.PLOT_ERR)
-
-
-def GetPlotMeta(chan: CChan, figure_config) -> List[CChanPlotMeta]:
-    plot_metas = [CChanPlotMeta(chan[kl_type]) for kl_type in chan.lv_list]
-    if figure_config.get("only_top_lv", False):
-        plot_metas = [plot_metas[0]]
-    return plot_metas
-
 
 class CPlotDriver:
     def __init__(self, chan: CChan, plot_config: Union[str, dict, list] = '', plot_para=None):
@@ -164,7 +19,10 @@ class CPlotDriver:
         if plot_para is None:
             plot_para = {}
         figure_config: dict = plot_para.get('figure', {})
-
+        
+        self.version="Zen.01.2021.01.01"
+        self.echartsData={}
+        
         plot_config = parse_plot_config(plot_config, chan.lv_list)
         plot_metas = GetPlotMeta(chan, figure_config)
         self.lv_lst = chan.lv_list[:len(plot_metas)]
@@ -291,14 +149,30 @@ class CPlotDriver:
     def save2img(self, path):
         plt.savefig(path, bbox_inches='tight')
 
+   
     def draw_klu(self, meta: CChanPlotMeta, ax: Axes, width=0.4, rugd=True, plot_mode="kl"):
-        cprint ("PlotDriver.py: 288,绘制K线图")
+        
+        cprint ("PlotDriver.py: 295,绘制K线图,plot_mode: "+ plot_mode)
+        
         # rugd: red up green down
         up_color = 'r' if rugd else 'g'
         down_color = 'g' if rugd else 'r'
 
         x_begin = ax.get_xlim()[0]
         _x, _y = [], []
+        
+        
+        kXdata=[]
+        kYdata=[]
+        
+        
+        for kl in meta.klu_iter():
+            i = kl.idx
+            # print("------------>>")
+            # cprint( kl)
+            kXdata.append(kl.time)
+            kYdata.append([kl.open,kl.close,kl.high,kl.low])
+        
         for kl in meta.klu_iter():
             i = kl.idx
             if i+width < x_begin:
@@ -312,6 +186,7 @@ class CPlotDriver:
                 else:  # 画阴线
                     ax.add_patch(Rectangle((i - width / 2, kl.open), width, kl.close - kl.open, color=down_color))
                     ax.plot([i, i], [kl.low, kl.high], color=down_color)
+                    
             elif plot_mode in "close":
                 _y.append(kl.close)
                 _x.append(i)
@@ -326,8 +201,15 @@ class CPlotDriver:
                 _x.append(i)
             else:
                 raise CChanException(f"unknow plot mode={plot_mode}, must be one of kl/close/open/high/low", ErrCode.PLOT_ERR)
+        
+        self.echartsData={ "x":kXdata,"y":kYdata }
         if _x:
+            # 
+            cprint ("PlotDriver.py:337:如果 x轴有数据,绘制K线图")
+           
             ax.plot(_x, _y)
+        else:
+            cprint ("PlotDriver.py:341:x轴没有数据")
 
     def draw_klc(self, meta: CChanPlotMeta, ax: Axes, width=0.4, plot_single_kl=True):
         color_type = {FX_TYPE.TOP: 'red', FX_TYPE.BOTTOM: 'blue', KLINE_DIR.UP: 'green', KLINE_DIR.DOWN: 'green'}
@@ -658,12 +540,6 @@ class CPlotDriver:
             )
 
 
-def plot_bi_element(bi: CBi_meta, ax: Axes, color: str):
-    if bi.id_sure:
-        ax.plot([bi.begin_x, bi.end_x], [bi.begin_y, bi.end_y], color=color)
-    else:
-        ax.plot([bi.begin_x, bi.end_x], [bi.begin_y, bi.end_y], linestyle='dashed', color=color)
-
 
 def bi_text(bi_idx, ax: Axes, bi, end_fontsize, end_color):
     if bi_idx == 0:
@@ -718,3 +594,158 @@ def add_zs_text(ax: Axes, zs_meta: CZS_meta, fontsize, text_color):
         horizontalalignment='center',
     )
     
+    
+
+
+
+def reformat_plot_config(plot_config: Dict[str, bool]):
+    """pcolor
+    兼容不填写`plot_`前缀的情况
+    """
+    def _format(s):
+        return s if s.startswith("plot_") else f"plot_{s}"
+
+    return {_format(k): v for k, v in plot_config.items()}
+
+
+def parse_single_lv_plot_config(plot_config: Union[str, dict, list]) -> Dict[str, bool]:
+    """
+    返回单一级别的plot_config配置
+    """
+    if isinstance(plot_config, dict):
+        return reformat_plot_config(plot_config)
+    elif isinstance(plot_config, str):
+        return reformat_plot_config(dict([(k.strip().lower(), True) for k in plot_config.split(",")]))
+    elif isinstance(plot_config, list):
+        return reformat_plot_config(dict([(k.strip().lower(), True) for k in plot_config]))
+    else:
+        raise CChanException("plot_config only support list/str/dict", ErrCode.PLOT_ERR)
+
+
+def parse_plot_config(plot_config: Union[str, dict, list], lv_list: List[KL_TYPE]) -> Dict[KL_TYPE, Dict[str, bool]]:
+    """
+    支持：
+        - 传入字典
+        - 传入字符串，逗号分割
+        - 传入数组，元素为各个需要画的笔的元素
+        - 传入key为各个级别的字典
+        - 传入key为各个级别的字符串
+        - 传入key为各个级别的数组
+    """
+    if isinstance(plot_config, dict):
+        if all(isinstance(_key, str) for _key in plot_config.keys()):  # 单层字典
+            return {lv: parse_single_lv_plot_config(plot_config) for lv in lv_list}
+        elif all(isinstance(_key, KL_TYPE) for _key in plot_config.keys()):  # key为KL_TYPE
+            for lv in lv_list:
+                assert lv in plot_config
+            return {lv: parse_single_lv_plot_config(plot_config[lv]) for lv in lv_list}
+        else:
+            raise CChanException("plot_config if is dict, key must be str/KL_TYPE", ErrCode.PLOT_ERR)
+    return {lv: parse_single_lv_plot_config(plot_config) for lv in lv_list}
+
+
+def set_x_tick(ax, x_limits, tick):
+    ax.set_xlim(x_limits[0], x_limits[1]+1)
+    ax.set_xticks(range(x_limits[0], x_limits[1], max([1, int((x_limits[1]-x_limits[0])/10)])))
+    ax.set_xticklabels([tick[i] for i in ax.get_xticks()], rotation=20)
+
+
+def cal_y_range(meta: CChanPlotMeta, ax):
+    x_begin = ax.get_xlim()[0]
+    y_min = float("inf")
+    y_max = float("-inf")
+    for klc_meta in meta.klc_list:
+        if klc_meta.klu_list[-1].idx < x_begin:
+            continue  # 不绘制范围外的
+        if klc_meta.high > y_max:
+            y_max = klc_meta.high
+        if klc_meta.low < y_min:
+            y_min = klc_meta.low
+    return (y_min, y_max)
+
+
+def create_figure(plot_macd: Dict[KL_TYPE, bool], figure_config, lv_lst: List[KL_TYPE]) -> Tuple[Figure, Dict[KL_TYPE, List[Axes]]]:
+    """
+    返回：
+        - Figure
+        - Dict[KL_TYPE, List[Axes]]: 如果Axes长度为1, 说明不需要画macd, 否则需要
+    """
+    default_w, default_h = 24, 10
+    macd_h_ration = figure_config.get('macd_h', 0.3)
+    w = figure_config.get('w', default_w)
+    h = figure_config.get('h', default_h)
+
+    total_h = 0
+    gridspec_kw = []
+    sub_pic_cnt = 0
+    for lv in lv_lst:
+        if plot_macd[lv]:
+            total_h += h*(1+macd_h_ration)
+            gridspec_kw.extend((1, macd_h_ration))
+            sub_pic_cnt += 2
+        else:
+            total_h += h
+            gridspec_kw.append(1)
+            sub_pic_cnt += 1
+    
+    plt.rcParams['font.sans-serif']=['SimHei'] #用来正常显示中文标签
+    plt.rcParams['axes.unicode_minus'] = False #用来正常显示负号
+    # plt.title(u"Zen-K汉字")
+    # 设置 style 
+    plt.style.use('ggplot')
+    
+    figure, axes = plt.subplots(
+        sub_pic_cnt,
+        1,
+        figsize=(w, total_h),
+        gridspec_kw={'height_ratios': gridspec_kw}
+    )
+    
+    
+    try:
+        axes[0]
+    except Exception:  # 只有一个级别，且不需要画macd
+        axes = [axes]
+
+    axes_dict: Dict[KL_TYPE, List[Axes]] = {}
+    idx = 0
+    for lv in lv_lst:
+        if plot_macd[lv]:
+            axes_dict[lv] = axes[idx: idx+2]  # type: ignore
+            idx += 2
+        else:
+            axes_dict[lv] = [axes[idx]]  # type: ignore
+            idx += 1
+    assert idx == len(axes)
+    return figure, axes_dict
+
+
+def cal_x_limit(meta: CChanPlotMeta, x_range):
+    X_LEN = meta.klu_len
+    return [X_LEN - x_range, X_LEN - 1] if x_range and X_LEN > x_range else [0, X_LEN - 1]
+
+
+def set_grid(ax, config):
+    if config is None:
+        return
+    if config == "xy":
+        ax.grid(True)
+        return
+    if config in ("x", "y"):
+        ax.grid(True, axis=config)
+        return
+    raise CChanException(f"unsupport grid config={config}", ErrCode.PLOT_ERR)
+
+
+def GetPlotMeta(chan: CChan, figure_config) -> List[CChanPlotMeta]:
+    plot_metas = [CChanPlotMeta(chan[kl_type]) for kl_type in chan.lv_list]
+    if figure_config.get("only_top_lv", False):
+        plot_metas = [plot_metas[0]]
+    return plot_metas
+
+
+def plot_bi_element(bi: CBi_meta, ax: Axes, color: str):
+    if bi.id_sure:
+        ax.plot([bi.begin_x, bi.end_x], [bi.begin_y, bi.end_y], color=color)
+    else:
+        ax.plot([bi.begin_x, bi.end_x], [bi.begin_y, bi.end_y], linestyle='dashed', color=color)
