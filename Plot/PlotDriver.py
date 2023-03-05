@@ -157,13 +157,13 @@ class CPlotDriver:
         # rugd: red up green down
         up_color = 'r' if rugd else 'g'
         down_color = 'g' if rugd else 'r'
-
+        
         x_begin = ax.get_xlim()[0]
         _x, _y = [], []
         
         
-        kXdata=[]
-        kYdata=[]
+        kluXdata=[]
+        kluYdata=[]
         
         
         for kl in meta.klu_iter():
@@ -171,8 +171,8 @@ class CPlotDriver:
             # print("------------>>")
             # cprint( kl)
             # print( kl.time.to_str()) 
-            kXdata.append(kl.time.to_str())
-            kYdata.append([kl.open, kl.close,kl.low,kl.high,kl.low])
+            kluXdata.append(kl.time.to_str())
+            kluYdata.append([kl.open, kl.close,kl.low,kl.high,kl.low])
         
         for kl in meta.klu_iter():
             i = kl.idx
@@ -203,7 +203,7 @@ class CPlotDriver:
             else:
                 raise CChanException(f"unknow plot mode={plot_mode}, must be one of kl/close/open/high/low", ErrCode.PLOT_ERR)
         
-        self.echartsData={ "x":kXdata,"y":kYdata }
+        self.echartsData={ "x":kluXdata,"y": kluYdata }
         if _x:
             # 
             cprint ("PlotDriver.py:337:如果 x轴有数据,绘制K线图")
@@ -215,12 +215,12 @@ class CPlotDriver:
     def draw_klc(self, meta: CChanPlotMeta, ax: Axes, width=0.4, plot_single_kl=True):
         color_type = {FX_TYPE.TOP: 'red', FX_TYPE.BOTTOM: 'blue', KLINE_DIR.UP: 'green', KLINE_DIR.DOWN: 'green'}
         x_begin = ax.get_xlim()[0]
-
         for klc_meta in meta.klc_list:
             if klc_meta.klu_list[-1].idx+width < x_begin:
                 continue  # 不绘制范围外的
             if klc_meta.end_idx == klc_meta.begin_idx and not plot_single_kl:
                 continue
+            # 画矩形 ,对应  add_shape
             ax.add_patch(
                 Rectangle(
                     (klc_meta.begin_idx - width, klc_meta.low),
@@ -228,8 +228,8 @@ class CPlotDriver:
                     klc_meta.high - klc_meta.low,
                     fill=False,
                     color=color_type[klc_meta.type]))
-
-
+        
+    
     # 画笔
     def draw_bi(
         self,
