@@ -9,6 +9,7 @@ from Chan import CChan
 from Common.CEnum import BI_DIR, FX_TYPE, KL_TYPE, KLINE_DIR, TREND_TYPE
 from Common.ChanException import CChanException, ErrCode
 from .PlotMeta import CBi_meta, CChanPlotMeta, CZS_meta
+from colorama import Fore, Back, Style
 
 
 
@@ -25,6 +26,11 @@ class CPlotDriver:
         
         plot_config = parse_plot_config(plot_config, chan.lv_list)
         plot_metas = GetPlotMeta(chan, figure_config)
+       
+        cprint("PlotDriver.py:39,plot_metas",Fore.YELLOW) 
+        print(  vars ( plot_metas[0] )  )
+        
+        
         self.lv_lst = chan.lv_list[:len(plot_metas)]
 
         cprint("PlotDriver.py:164,初始化plot_driver")
@@ -249,7 +255,14 @@ class CPlotDriver:
         end_color='black',
         end_fontsize=10,
     ):
-        cprint("画笔>>>draw_bi")
+        cprint("画笔>>>draw_bi / bi_orginal_list")
+        
+        # print( meta.bi_orginal_list) 
+        
+        for bi_idx, bi in enumerate(meta.bi_list):
+            cprint("笔的具体信息:",Fore.RED)
+            print(  vars(bi) )
+        
         x_begin = ax.get_xlim()[0]
         for bi_idx, bi in enumerate(meta.bi_list):
             if bi.end_x < x_begin:

@@ -13,12 +13,13 @@ class CKLine(CKLine_Combiner[CKLine_Unit]):
         self.kl_type = kl_unit.kl_type
         kl_unit.set_klc(self)
 
+    # 定义Kline 打印的格式,加上 th 
     def __str__(self):
         fx_token = ""
         if self.fx == FX_TYPE.TOP:
-            fx_token = "^"
+            fx_token = "分形顶^"
         elif self.fx == FX_TYPE.BOTTOM:
-            fx_token = "_"
+            fx_token = "分形底_"
         return f"{self.idx}th{fx_token}:{self.time_begin}~{self.time_end}({self.kl_type}|{len(self.lst)}) low={self.low} high={self.high}"
 
     def GetSubKLC(self):

@@ -16,8 +16,6 @@ def cprint(pobj, pcolor = Fore.GREEN):
 
           
       else:
-          
-        
           if isinstance(pobj, pandas.core.frame.DataFrame):
                 print(pcolor )
                 print(pobj.head(10).to_string())  
@@ -29,8 +27,6 @@ def cprint(pobj, pcolor = Fore.GREEN):
                 print( pcolor )
                 print(  len(pobj))
                 print ('\n'.join([ str(myelement) for myelement in pobj ]))
-         
-         
          
           if  type(pobj).__name__ == 'CKLine_Unit':
                 print("CKLine_Unit")
@@ -45,9 +41,3 @@ def cprint(pobj, pcolor = Fore.GREEN):
                 print(vars(pobj))
  
                       
-        
-         
-          
- 
-
-    

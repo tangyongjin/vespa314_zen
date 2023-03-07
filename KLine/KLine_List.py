@@ -2,7 +2,7 @@ from typing import List, Union, overload
 
 from Bi.Bi import CBi
 from Bi.BiList import CBiList
-from BuySellPoint.BSPointList import CBSPointList
+from BuySellPoint.BuySellPointList import BuySellPointList
 from ChanConfig import CChanConfig
 from Common.CEnum import KLINE_DIR, SEG_TYPE
 from Common.ChanException import CChanException, ErrCode
@@ -34,8 +34,8 @@ class CKLine_List:
         self.zs_list = CZSList(zs_config=conf.zs_conf)
         self.segzs_list = CZSList(zs_config=conf.zs_conf)
 
-        self.bs_point_lst = CBSPointList[CBi, CBiList](bs_point_config=conf.bs_point_conf)
-        self.seg_bs_point_lst = CBSPointList[CSeg, CSegListComm](bs_point_config=conf.seg_bs_point_conf)
+        self.bs_point_lst = BuySellPointList[CBi, CBiList](bs_point_config=conf.bs_point_conf)
+        self.seg_bs_point_lst = BuySellPointList[CSeg, CSegListComm](bs_point_config=conf.seg_bs_point_conf)
 
         self.metric_model_lst = conf.GetMetricModel()
 

@@ -1,8 +1,9 @@
 from typing import List, Optional, Union, overload
+from colorama import Fore, Back, Style
 
 from Common.CEnum import FX_TYPE, KLINE_DIR
 from KLine.KLine import CKLine
-
+from Tools.DebugTool import cprint
 from .Bi import CBi
 from .BiConfig import CBiConfig
 
@@ -10,6 +11,9 @@ from .BiConfig import CBiConfig
 class CBiList:
     def __init__(self, bi_conf=CBiConfig()):
         self.bi_list: List[CBi] = []
+        
+        self.bi_orginal_list = []
+        
         self.last_end = None  # 最后一笔的尾部
         self.config = bi_conf
 
@@ -103,6 +107,23 @@ class CBiList:
         return False
 
     def add_new_bi(self, pre_klc, cur_klc, is_sure=True):
+        
+        cprint(  "添加新笔 add_new_bi",pcolor= Fore.RED)    
+        
+        # print( len(self.bi_list) )
+        print(  type   (pre_klc) )
+        print  (pre_klc) 
+        print(  vars(pre_klc))
+        
+        cprint( ">>>>>>>>>>>",pcolor= Fore.RED)
+        print( pre_klc.time_begin )
+        
+        if pre_klc.fx == FX_TYPE.TOP:
+            _kl_value=pre_klc.high
+        if pre_klc.fx == FX_TYPE.BOTTOM:
+            _kl_value=pre_klc.low
+        
+        self.bi_orginal_list.append([ pre_klc.time_begin, _kl_value ]);
         self.bi_list.append(CBi(pre_klc, cur_klc, idx=len(self.bi_list), is_sure=is_sure))
         if len(self.bi_list) >= 2:
             self.bi_list[-2].next = self.bi_list[-1]

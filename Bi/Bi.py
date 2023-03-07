@@ -1,5 +1,4 @@
 from typing import List, Optional
-
 from Common.cache import make_cache
 from Common.CEnum import BI_DIR, BI_TYPE, DATA_FIELD, FX_TYPE, MACD_ALGO
 from Common.ChanException import CChanException, ErrCode
