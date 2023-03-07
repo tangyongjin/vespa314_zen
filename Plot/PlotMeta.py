@@ -1,14 +1,16 @@
 from typing import List
-
+import time
 from Bi.Bi import CBi
 from BuySellPoint.BS_Point import CBS_Point
-from Common.CEnum import FX_TYPE
+from Common.CEnum import FX_TYPE ,BI_DIR
 from KLine.KLine import CKLine
 from KLine.KLine_List import CKLine_List
 from Seg.Eigen import CEigen
 from Seg.EigenFX import CEigenFX
 from Seg.Seg import CSeg
 from ZS.ZS import CZS
+from Tools.DebugTool import cprint
+from colorama import Fore, Back, Style
 
 
 class Cklc_meta:
@@ -103,7 +105,7 @@ class CBS_Point_meta:
         return f'{is_seg_flag}b{self.type}' if self.is_buy else f'{is_seg_flag}s{self.type}'
 
 
-class CChanPlotMeta:
+class ZenPlotMeta:
     def __init__(self, kl_list: CKLine_List):
         self.data = kl_list
 
@@ -112,8 +114,78 @@ class CChanPlotMeta:
         self.klu_len = sum(len(klc.klu_list) for klc in self.klc_list)
 
         self.bi_list = [CBi_meta(bi) for bi in kl_list.bi_list]
-        # self.bi_orginal_list =  [ orginbi  for orginbi in kl_list.bi_orginal_list]  
         
+        
+        
+        self.bi_orginal_list =  []
+        
+        
+        #  # print( len(self.bi_list) )
+        # print(  type   (pre_klc) )
+        # print  (pre_klc) 
+        # print(  vars(pre_klc))
+        
+        # cprint( ">>>>>>>>>>>",pcolor= Fore.RED)
+        # print( pre_klc.time_begin )
+        
+        # if pre_klc.fx == FX_TYPE.TOP:
+        #     _kl_value=pre_klc.high
+        # if pre_klc.fx == FX_TYPE.BOTTOM:
+        #     _kl_value=pre_klc.low
+        
+        
+        
+        
+        
+        cprint("ZenPlotMeta 118",Fore.RED)
+        for xxxbi in kl_list.bi_list:
+            cprint("--------------> 122",Fore.RED)
+            print(  xxxbi._CBi__begin_klc.time_end)
+            print(  xxxbi._CBi__begin_klc.high)
+            print(  xxxbi._CBi__begin_klc.low)
+            
+            print(  xxxbi._CBi__end_klc.time_end)
+            print(  xxxbi._CBi__end_klc.high)
+            print(  xxxbi._CBi__end_klc.low)
+            print(  xxxbi._CBi__dir)
+            print( vars(xxxbi) )
+            print( xxxbi )
+            
+            point1={}
+            point2={}
+            # from Common.CEnum import FX_CHECK_METHOD, FX_TYPE, KLINE_DIR
+
+            if xxxbi._CBi__dir ==BI_DIR.UP:
+                cprint("--------------> UP",Fore.RED)
+                point1={ "date":xxxbi._CBi__begin_klc.time_end, "value": xxxbi._CBi__begin_klc.low  }
+                point2={ "date":xxxbi._CBi__end_klc.time_end, "value":xxxbi._CBi__end_klc.high }
+            else:   
+                cprint("--------------> DOWN",Fore.RED)
+                point1={ "date":xxxbi._CBi__begin_klc.time_end, "value": xxxbi._CBi__begin_klc.high  }
+                point2={ "date":xxxbi._CBi__end_klc.time_end, "value":xxxbi._CBi__end_klc.low }
+                
+                
+            # bi_orginal_list    
+            
+            if not self.bi_orginal_list:
+                self.bi_orginal_list.append(point1)
+                self.bi_orginal_list.append(point2)
+            else:
+                print("List is not empty")
+                if self.bi_orginal_list[-1]==point1:
+                    self.bi_orginal_list.append(point2)
+                else:
+                    self.bi_orginal_list.append(point1)
+                    self.bi_orginal_list.append(point2)        
+        
+        cprint("最后数组 178",Fore.RED)
+        print(  self.bi_orginal_list)      
+        
+        
+
+        self.Zbi_dates = [ item['date'].__str__()  for item in self.bi_orginal_list]
+        self.Zbi_values = [item['value'] for item in self.bi_orginal_list]
+          
         self.seg_list: List[CSeg_meta] = []
         self.eigenfx_lst: List[CEigenFX_meta] = []
         for seg in kl_list.seg_list:
