@@ -23,7 +23,7 @@ class ZenPlotMeta:
         self.klu_len = sum(len(klc.klu_list) for klc in self.klc_list)
         self.bi_list = [CBi_meta(bi) for bi in kl_list.bi_list]
         # 得到echarts 版本的 笔s
-        self.BiPoints  = self.GET_BiPoints(kl_list.bi_list )
+        self.BiPoints  = self.GET_BiPoints_echarts(kl_list.bi_list )
         # 得到echarts 版本的 线段
         self.SegPoints  = self.GET_SegPoints_echarts(kl_list.seg_list )
         
@@ -77,7 +77,7 @@ class ZenPlotMeta:
         
         
     
-    def  GET_BiPoints(self, kl_list_bi_list):
+    def  GET_BiPoints_echarts(self, kl_list_bi_list):
         bi_orginal_list =  []
         for xxxbi in kl_list_bi_list:
             
