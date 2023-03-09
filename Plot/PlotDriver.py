@@ -46,36 +46,35 @@ class CPlotDriver:
         srange_begin = 0
         assert slv_seg_cnt is None or slv_bi_cnt is None, "you can set at most one of seg_sub_lv_cnt/bi_sub_lv_cnt"
 
-        for meta, lv in zip(plot_metas, self.lv_lst):  # type: ignore
+        for plot_meta, lv in zip(plot_metas, self.lv_lst):  # type: ignore
             ax = axes[lv][0]
             ax_macd = None if len(axes[lv]) == 1 else axes[lv][1]
             set_grid(ax, figure_config.get("grid", "xy"))
             # 设置标题位置,颜色
             ax.set_title(f"{chan.code}/{lv.name.split('K_')[1]}", fontsize=16, loc='center', color='r')
 
-            x_limits = cal_x_limit(meta, x_range)
+            x_limits = cal_x_limit(plot_meta, x_range)
             if lv != self.lv_lst[0]:
                 if sseg_begin != 0 or sbi_begin != 0:
                     x_limits[0] = max(sseg_begin, sbi_begin)
                 elif srange_begin != 0:
                     x_limits[0] = srange_begin
-            set_x_tick(ax, x_limits, meta.datetick)
+            set_x_tick(ax, x_limits, plot_meta.datetick)
             if ax_macd:
-                set_x_tick(ax_macd, x_limits, meta.datetick)
-            self.y_min, self.y_max = cal_y_range(meta, ax)  # 需要先设置 x_tick后计算
+                set_x_tick(ax_macd, x_limits, plot_meta.datetick)
+            self.y_min, self.y_max = cal_y_range(plot_meta, ax)  # 需要先设置 x_tick后计算
 
-            self.DrawSubFig(plot_config[lv], meta, ax, lv, plot_para, ax_macd, x_limits)
+            self.DrawSubFig(plot_config[lv], plot_meta, ax, lv, plot_para, ax_macd, x_limits)
 
             if lv != self.lv_lst[-1]:
-                sseg_begin = meta.sub_last_kseg_start_idx(slv_seg_cnt)
-                sbi_begin = meta.sub_last_kbi_start_idx(slv_bi_cnt)
+                sseg_begin = plot_meta.sub_last_kseg_start_idx(slv_seg_cnt)
+                sbi_begin = plot_meta.sub_last_kbi_start_idx(slv_bi_cnt)
                 if x_range != 0:
-                    srange_begin = meta.sub_range_start_idx(x_range)
+                    srange_begin = plot_meta.sub_range_start_idx(x_range)
 
             ax.set_ylim(self.y_min, self.y_max)
-            plt.savefig("scatter_plot.png", dpi=300)
 
-    def GetRealXrange(self, figure_config, meta: ZenPlotMeta):
+    def GetRealXrange(self, figure_config, zenPltMeta: ZenPlotMeta):
         x_range = figure_config.get("x_range", 0)
         bi_cnt = figure_config.get("x_bi_cnt", 0)
         seg_cnt = figure_config.get("x_seg_cnt", 0)
@@ -85,22 +84,22 @@ class CPlotDriver:
             return x_range
         if bi_cnt != 0:
             assert x_range == 0 and seg_cnt == 0 and x_begin_date == 0, "x_range/x_bi_cnt/x_seg_cnt/x_begin_date can not be set at the same time"
-            X_LEN = meta.klu_len
-            if len(meta.bi_list) < bi_cnt:
+            X_LEN = zenPltMeta.klu_len
+            if len(zenPltMeta.bi_list) < bi_cnt:
                 return 0
-            x_range = X_LEN-meta.bi_list[-bi_cnt].begin_x
+            x_range = X_LEN-zenPltMeta.bi_list[-bi_cnt].begin_x
             return x_range
         if seg_cnt != 0:
             assert x_range == 0 and bi_cnt == 0 and x_begin_date == 0, "x_range/x_bi_cnt/x_seg_cnt/x_begin_date can not be set at the same time"
-            X_LEN = meta.klu_len
-            if len(meta.seg_list) < seg_cnt:
+            X_LEN = zenPltMeta.klu_len
+            if len(zenPltMeta.seg_list) < seg_cnt:
                 return 0
-            x_range = X_LEN-meta.seg_list[-seg_cnt].begin_x
+            x_range = X_LEN-zenPltMeta.seg_list[-seg_cnt].begin_x
             return x_range
         if x_begin_date != 0:
             assert x_range == 0 and bi_cnt == 0 and seg_cnt == 0, "x_range/x_bi_cnt/x_seg_cnt/x_begin_date can not be set at the same time"
             x_range = 0
-            for date_tick in meta.datetick[::-1]:
+            for date_tick in zenPltMeta.datetick[::-1]:
                 if date_tick >= x_begin_date:
                     x_range += 1
                 else:
@@ -108,7 +107,7 @@ class CPlotDriver:
             return x_range
         return x_range
 
-    def DrawSubFig(self, plot_config: Dict[str, bool], meta, ax: Axes, lv, plot_para, ax_macd: Optional[Axes], x_limits):
+    def DrawSubFig(self, plot_config: Dict[str, bool], zenPltMeta, ax: Axes, lv, plot_para, ax_macd: Optional[Axes], x_limits):
         cprint("PlotDriver.py:238,绘制元素, plot_config.get(某项配置,缺省False)  ")
         cprint('plot_config type:' +type (plot_config).__name__ )
         print(plot_config)
@@ -117,34 +116,34 @@ class CPlotDriver:
         cprint("debug-End")
          
         if plot_config.get("plot_kline", False):
-            self.draw_klu(meta, ax, **plot_para.get('kl', {}))
+            self.draw_klu(zenPltMeta, ax, **plot_para.get('kl', {}))
         if plot_config.get("plot_kline_combine", False):
-            self.draw_klc(meta, ax, **plot_para.get('klc', {}) )
+            self.draw_klc(zenPltMeta, ax, **plot_para.get('klc', {}) )
         if plot_config.get("plot_bi", False):
-            self.draw_bi(meta, ax, lv, **plot_para.get('bi', {}))
+            self.draw_bi(zenPltMeta, ax, lv, **plot_para.get('bi', {}))
         if plot_config.get("plot_seg", False):
-            self.draw_seg(meta, ax, lv, **plot_para.get('seg', {}))
+            self.draw_seg(zenPltMeta, ax, lv, **plot_para.get('seg', {}))
         if plot_config.get("plot_segseg", False):
-            self.draw_segseg(meta, ax, **plot_para.get('segseg', {}))
+            self.draw_segseg(zenPltMeta, ax, **plot_para.get('segseg', {}))
         if plot_config.get("plot_eigen", False):
-            self.draw_eigen(meta, ax, **plot_para.get('eigen', {}))
+            self.draw_eigen(zenPltMeta, ax, **plot_para.get('eigen', {}))
         if plot_config.get("plot_zs", False):
-            self.draw_zs(meta, ax, **plot_para.get('zs', {}))
+            self.draw_zs(zenPltMeta, ax, **plot_para.get('zs', {}))
         if plot_config.get("plot_segzs", False):
-            self.draw_segzs(meta, ax, **plot_para.get('segzs', {}))
+            self.draw_segzs(zenPltMeta, ax, **plot_para.get('segzs', {}))
         if plot_config.get("plot_macd", False):
             assert ax_macd is not None
-            self.draw_macd(meta, ax_macd, x_limits, **plot_para.get('macd', {}))
+            self.draw_macd(zenPltMeta, ax_macd, x_limits, **plot_para.get('macd', {}))
         if plot_config.get("plot_mean", False):
-            self.draw_mean(meta, ax, **plot_para.get('mean', {}))
+            self.draw_mean(zenPltMeta, ax, **plot_para.get('mean', {}))
         if plot_config.get("plot_channel", False):
-            self.draw_channel(meta, ax, **plot_para.get('channel', {}))
+            self.draw_channel(zenPltMeta, ax, **plot_para.get('channel', {}))
         if plot_config.get("plot_boll", False):
-            self.draw_boll(meta, ax, **plot_para.get('boll', {}))
+            self.draw_boll(zenPltMeta, ax, **plot_para.get('boll', {}))
         if plot_config.get("plot_bsp", False):
-            self.draw_bs_point(meta, ax, **plot_para.get('bsp', {}))
+            self.draw_bs_point(zenPltMeta, ax, **plot_para.get('bsp', {}))
         if plot_config.get("plot_segbsp", False):
-            self.draw_seg_bs_point(meta, ax, **plot_para.get('seg_bsp', {}))
+            self.draw_seg_bs_point(zenPltMeta, ax, **plot_para.get('seg_bsp', {}))
 
     def ShowDrawFuncHelper(self):
         # 写README的时候显示所有画图函数的参数和默认值
@@ -158,7 +157,7 @@ class CPlotDriver:
          
 
    
-    def draw_klu(self, meta: ZenPlotMeta, ax: Axes, width=0.4, rugd=True, plot_mode="kl"):
+    def draw_klu(self, zenPltMeta: ZenPlotMeta, ax: Axes, width=0.4, rugd=True, plot_mode="kl"):
         
         cprint ("PlotDriver.py: 295,绘制K线图,plot_mode: "+ plot_mode)
         
@@ -174,7 +173,7 @@ class CPlotDriver:
         kluYdata=[]
         
         
-        for kl in meta.klu_iter():
+        for kl in zenPltMeta.klu_iter():
             i = kl.idx
             # print("------------>>")
             # cprint( kl)
@@ -182,7 +181,7 @@ class CPlotDriver:
             kluXdata.append(kl.time.to_str())
             kluYdata.append([kl.open, kl.close,kl.low,kl.high,kl.low])
         
-        for kl in meta.klu_iter():
+        for kl in zenPltMeta.klu_iter():
             i = kl.idx
             if i+width < x_begin:
                 continue  # 不绘制范围外的
@@ -213,10 +212,10 @@ class CPlotDriver:
         
         
         cprint("API结果**********************",Fore.RED)
-        print( meta.SegPoints)
+        print( zenPltMeta.SegPoints)
          
-        self.echartsData={ "x":kluXdata,"y": kluYdata , "BiPoints":meta.BiPoints  ,'SegPoints':meta.SegPoints}
-        # self.echartsData={ "x":kluXdata,"y": kluYdata , "BiPoints":meta.BiPoints }
+        self.echartsData={ "x":kluXdata,"y": kluYdata , "BiPoints":zenPltMeta.BiPoints  ,'SegPoints':zenPltMeta.SegPoints}
+        # self.echartsData={ "x":kluXdata,"y": kluYdata , "BiPoints":zenPltMeta.BiPoints }
         
         if _x:
             # 
@@ -225,10 +224,10 @@ class CPlotDriver:
         else:
             cprint ("PlotDriver.py:341:x轴没有数据")
 
-    def draw_klc(self, meta: ZenPlotMeta, ax: Axes, width=0.4, plot_single_kl=True):
+    def draw_klc(self, zenPltMeta: ZenPlotMeta, ax: Axes, width=0.4, plot_single_kl=True):
         color_type = {FX_TYPE.TOP: 'red', FX_TYPE.BOTTOM: 'blue', KLINE_DIR.UP: 'green', KLINE_DIR.DOWN: 'green'}
         x_begin = ax.get_xlim()[0]
-        for klc_meta in meta.klc_list:
+        for klc_meta in zenPltMeta.klc_list:
             if klc_meta.klu_list[-1].idx+width < x_begin:
                 continue  # 不绘制范围外的
             if klc_meta.end_idx == klc_meta.begin_idx and not plot_single_kl:
@@ -246,7 +245,7 @@ class CPlotDriver:
     # 画笔
     def draw_bi(
         self,
-        meta: ZenPlotMeta,
+        zenPltMeta: ZenPlotMeta,
         ax: Axes,
         lv,
         color='black',
@@ -269,7 +268,7 @@ class CPlotDriver:
        
         
         x_begin = ax.get_xlim()[0]
-        for bi_idx, bi in enumerate(meta.bi_list):
+        for bi_idx, bi in enumerate(zenPltMeta.bi_list):
             if bi.end_x < x_begin:
                 continue
             plot_bi_element(bi, ax, color)
@@ -279,10 +278,10 @@ class CPlotDriver:
             if disp_end:
                 bi_text(bi_idx, ax, bi, end_fontsize, end_color)
         if sub_lv_cnt is not None and len(self.lv_lst) > 1 and lv != self.lv_lst[-1]:
-            if sub_lv_cnt >= len(meta.bi_list):
+            if sub_lv_cnt >= len(zenPltMeta.bi_list):
                 return
             else:
-                begin_idx = meta.bi_list[-sub_lv_cnt].begin_x
+                begin_idx = zenPltMeta.bi_list[-sub_lv_cnt].begin_x
             y_begin, y_end = ax.get_ylim()
             x_end = int(ax.get_xlim()[1])
             
@@ -293,7 +292,7 @@ class CPlotDriver:
     # 画线段 
     def draw_seg(
         self,
-        meta: ZenPlotMeta,
+        zenPltMeta: ZenPlotMeta,
         ax: Axes,
         lv,
         width=1,
@@ -308,13 +307,13 @@ class CPlotDriver:
         x_begin = ax.get_xlim()[0]
         
         cprint("画线段>>>draw_seg")
-        print(meta.seg_list)
+        print(zenPltMeta.seg_list)
         
-        # for seg_idx, seg_meta in enumerate(meta.seg_list):
+        # for seg_idx, seg_meta in enumerate(zenPltMeta.seg_list):
         #     # cprint( seg_meta)
         #     print( type(seg_meta)   )
 
-        for seg_idx, seg_meta in enumerate(meta.seg_list):
+        for seg_idx, seg_meta in enumerate(zenPltMeta.seg_list):
             
             cprint(  seg_meta)
             if seg_meta.end_x < x_begin:
@@ -328,17 +327,17 @@ class CPlotDriver:
             if disp_end:
                 bi_text(seg_idx, ax, seg_meta, end_fontsize, end_color)
         if sub_lv_cnt is not None and len(self.lv_lst) > 1 and lv != self.lv_lst[-1]:
-            if sub_lv_cnt >= len(meta.seg_list):
+            if sub_lv_cnt >= len(zenPltMeta.seg_list):
                 return
             else:
-                begin_idx = meta.seg_list[-sub_lv_cnt].begin_x
+                begin_idx = zenPltMeta.seg_list[-sub_lv_cnt].begin_x
             y_begin, y_end = ax.get_ylim()
             x_end = int(ax.get_xlim()[1])
             ax.fill_between(range(begin_idx, x_end+1), y_begin, y_end, facecolor=facecolor, alpha=alpha)
 
     def draw_segseg(
         self,
-        meta: ZenPlotMeta,
+        zenPltMeta: ZenPlotMeta,
         ax: Axes,
         width=7,
         color="brown",
@@ -348,7 +347,7 @@ class CPlotDriver:
     ):
         x_begin = ax.get_xlim()[0]
 
-        for seg_idx, seg_meta in enumerate(meta.segseg_list):
+        for seg_idx, seg_meta in enumerate(zenPltMeta.segseg_list):
             if seg_meta.end_x < x_begin:
                 continue
             if seg_meta.is_sure:
@@ -374,10 +373,10 @@ class CPlotDriver:
                     verticalalignment="top" if seg_meta.dir == BI_DIR.DOWN else "bottom",
                     horizontalalignment='center')
 
-    def draw_eigen(self, meta: ZenPlotMeta, ax: Axes, color_top="r", color_bottom="b", aplha=0.5, only_peak=False):
+    def draw_eigen(self, zenPltMeta: ZenPlotMeta, ax: Axes, color_top="r", color_bottom="b", aplha=0.5, only_peak=False):
         x_begin = ax.get_xlim()[0]
 
-        for eigenfx_meta in meta.eigenfx_lst:
+        for eigenfx_meta in zenPltMeta.eigenfx_lst:
             color = color_top if eigenfx_meta.fx == FX_TYPE.TOP else color_bottom
             for idx, eigen_meta in enumerate(eigenfx_meta.ele):
                 if eigen_meta.begin_x+eigen_meta.w < x_begin:
@@ -393,7 +392,7 @@ class CPlotDriver:
 
     def draw_zs(
         self,
-        meta: ZenPlotMeta,
+        zenPltMeta: ZenPlotMeta,
         ax: Axes,
         color='orange',
         linewidth=2,
@@ -405,7 +404,7 @@ class CPlotDriver:
     ):
         linewidth = max(linewidth, 2)
         x_begin = ax.get_xlim()[0]
-        for zs_meta in meta.zs_lst:
+        for zs_meta in zenPltMeta.zs_lst:
             if not draw_one_bi_zs and zs_meta.is_onebi_zs:
                 continue
             if zs_meta.begin+zs_meta.w < x_begin:
@@ -419,10 +418,10 @@ class CPlotDriver:
                 for sub_zs_meta in zs_meta.sub_zs_lst:
                     add_zs_text(ax, sub_zs_meta, fontsize, text_color)
 
-    def draw_segzs(self, meta: ZenPlotMeta, ax: Axes, color='red', linewidth=10, sub_linewidth=4):
+    def draw_segzs(self, zenPltMeta: ZenPlotMeta, ax: Axes, color='red', linewidth=10, sub_linewidth=4):
         linewidth = max(linewidth, 2)
         x_begin = ax.get_xlim()[0]
-        for zs_meta in meta.segzs_lst:
+        for zs_meta in zenPltMeta.segzs_lst:
             if zs_meta.begin+zs_meta.w < x_begin:
                 continue
             line_style = '-' if zs_meta.is_sure else '--'
@@ -431,8 +430,8 @@ class CPlotDriver:
                 ax.add_patch(Rectangle((sub_zs_meta.begin, sub_zs_meta.low), sub_zs_meta.w, sub_zs_meta.h, fill=False, color=color, linewidth=sub_linewidth, linestyle=line_style))
 
     # 画 MACD 
-    def draw_macd(self, meta: ZenPlotMeta, ax: Axes, x_limits, width=0.4):
-        macd_lst = [klu.macd for klu in meta.klu_iter()]
+    def draw_macd(self, zenPltMeta: ZenPlotMeta, ax: Axes, x_limits, width=0.4):
+        macd_lst = [klu.macd for klu in zenPltMeta.klu_iter()]
         assert macd_lst[0] is not None, "you can't draw macd until you delete macd_metric=False"
 
         x_begin = x_limits[0]
@@ -450,8 +449,8 @@ class CPlotDriver:
                 _bar[idx].set_color("#006400")
         ax.set_ylim(y_min, y_max)
 
-    def draw_mean(self, meta: ZenPlotMeta, ax: Axes):
-        mean_lst = [klu.trend[TREND_TYPE.MEAN] for klu in meta.klu_iter()]
+    def draw_mean(self, zenPltMeta: ZenPlotMeta, ax: Axes):
+        mean_lst = [klu.trend[TREND_TYPE.MEAN] for klu in zenPltMeta.klu_iter()]
         Ts = list(mean_lst[0].keys())
         cmap = plt.cm.get_cmap('hsv', max([10, len(Ts)]))  # type: ignore
         for cmap_idx, T in enumerate(Ts):
@@ -459,9 +458,9 @@ class CPlotDriver:
             ax.plot(range(len(mean_arr)), mean_arr, c=cmap(cmap_idx), label=f'{T} meanline')
         ax.legend()
 
-    def draw_channel(self, meta: ZenPlotMeta, ax: Axes, T=None, top_color="r", bottom_color="b", linewidth=3, linestyle="solid"):
-        max_lst = [klu.trend[TREND_TYPE.MAX] for klu in meta.klu_iter()]
-        min_lst = [klu.trend[TREND_TYPE.MIN] for klu in meta.klu_iter()]
+    def draw_channel(self, zenPltMeta: ZenPlotMeta, ax: Axes, T=None, top_color="r", bottom_color="b", linewidth=3, linestyle="solid"):
+        max_lst = [klu.trend[TREND_TYPE.MAX] for klu in zenPltMeta.klu_iter()]
+        min_lst = [klu.trend[TREND_TYPE.MIN] for klu in zenPltMeta.klu_iter()]
         config_T_lst = sorted(list(max_lst[0].keys()))
         if T is None:
             T = config_T_lst[-1]
@@ -473,12 +472,12 @@ class CPlotDriver:
         ax.plot(range(len(bottom_array)), bottom_array, c=bottom_color, linewidth=linewidth, linestyle=linestyle, label=f'{T}-BUTTOM-channel')
         ax.legend()
 
-    def draw_boll(self, meta: ZenPlotMeta, ax: Axes, mid_color="black", up_color="blue", down_color="purple"):
+    def draw_boll(self, zenPltMeta: ZenPlotMeta, ax: Axes, mid_color="black", up_color="blue", down_color="purple"):
         x_begin = int(ax.get_xlim()[0])
         try:
-            ma = [klu.boll.MID for klu in meta.klu_iter()][x_begin:]
-            up = [klu.boll.UP for klu in meta.klu_iter()][x_begin:]
-            down = [klu.boll.DOWN for klu in meta.klu_iter()][x_begin:]
+            ma = [klu.boll.MID for klu in zenPltMeta.klu_iter()][x_begin:]
+            up = [klu.boll.UP for klu in zenPltMeta.klu_iter()][x_begin:]
+            down = [klu.boll.DOWN for klu in zenPltMeta.klu_iter()][x_begin:]
         except AttributeError as e:
             raise CChanException("you can't draw boll until you set boll_n in CChanConfig", ErrCode.PLOT_ERR) from e
 
@@ -519,9 +518,9 @@ class CPlotDriver:
             if bsp.y-arrow_len*arrow_dir > self.y_max:
                 self.y_max = bsp.y-arrow_len*arrow_dir
 
-    def draw_bs_point(self, meta: ZenPlotMeta, ax: Axes, buy_color='r', sell_color='g', fontsize=15, arrow_l=0.15, arrow_h=0.2, arrow_w=1):
+    def draw_bs_point(self, zenPltMeta: ZenPlotMeta, ax: Axes, buy_color='r', sell_color='g', fontsize=15, arrow_l=0.15, arrow_h=0.2, arrow_w=1):
         self.bsp_common_draw(
-            bsp_list=meta.bs_point_lst,
+            bsp_list=zenPltMeta.bs_point_lst,
             ax=ax,
             buy_color=buy_color,
             sell_color=sell_color,
@@ -531,9 +530,9 @@ class CPlotDriver:
             arrow_w=arrow_w,
         )
 
-    def draw_seg_bs_point(self, meta: ZenPlotMeta, ax: Axes, buy_color='r', sell_color='g', fontsize=18, arrow_l=0.2, arrow_h=0.25, arrow_w=1.2):
+    def draw_seg_bs_point(self, zenPltMeta: ZenPlotMeta, ax: Axes, buy_color='r', sell_color='g', fontsize=18, arrow_l=0.2, arrow_h=0.25, arrow_w=1.2):
         self.bsp_common_draw(
-            bsp_list=meta.seg_bsp_lst,
+            bsp_list=zenPltMeta.seg_bsp_lst,
             ax=ax,
             buy_color=buy_color,
             sell_color=sell_color,
@@ -671,11 +670,11 @@ def set_x_tick(ax, x_limits, tick):
     ax.set_xticklabels([tick[i] for i in ax.get_xticks()], rotation=20)
 
 
-def cal_y_range(meta: ZenPlotMeta, ax):
+def cal_y_range(zenPltMeta: ZenPlotMeta, ax):
     x_begin = ax.get_xlim()[0]
     y_min = float("inf")
     y_max = float("-inf")
-    for klc_meta in meta.klc_list:
+    for klc_meta in zenPltMeta.klc_list:
         if klc_meta.klu_list[-1].idx < x_begin:
             continue  # 不绘制范围外的
         if klc_meta.high > y_max:
@@ -741,8 +740,8 @@ def create_figure(plot_macd: Dict[KL_TYPE, bool], figure_config, lv_lst: List[KL
     return figure, axes_dict
 
 
-def cal_x_limit(meta: ZenPlotMeta, x_range):
-    X_LEN = meta.klu_len
+def cal_x_limit(zenPltMeta: ZenPlotMeta, x_range):
+    X_LEN = zenPltMeta.klu_len
     return [X_LEN - x_range, X_LEN - 1] if x_range and X_LEN > x_range else [0, X_LEN - 1]
 
 
