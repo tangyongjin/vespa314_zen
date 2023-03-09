@@ -32,8 +32,7 @@ def cprint(pobj, pcolor = Fore.GREEN):
                 print("CKLine_Unit")
                 print(vars(pobj))
           
-          if  type(pobj).__name__ == 'CSeg_meta':
-                print("CSeg_meta")
+          if  type(pobj).__name__ == 'Seg_meta':
                 print(vars(pobj))
 
           if  type(pobj).__name__ == 'CBS_Point':

@@ -15,8 +15,8 @@ from colorama import Fore, Back, Style
 
 class CPlotDriver:
     def __init__(self, chan: CChan, plot_config: Union[str, dict, list] = '', plot_para=None):
-        cprint("PlotDriver.py:156, init-->plot_para")
-        print(plot_para)
+        # cprint("PlotDriver.py:156, init-->plot_para")
+        # print(plot_para)
         if plot_para is None:
             plot_para = {}
         figure_config: dict = plot_para.get('figure', {})
@@ -27,13 +27,13 @@ class CPlotDriver:
         plot_config = parse_plot_config(plot_config, chan.lv_list)
         plot_metas = GetPlotMeta(chan, figure_config)
        
-        cprint("PlotDriver.py:39,plot_metas",Fore.YELLOW) 
-        print(  vars ( plot_metas[0] )  )
+        # cprint("PlotDriver.py:39,plot_metas",Fore.YELLOW) 
+        # print(  vars ( plot_metas[0] )  )
         
         
         self.lv_lst = chan.lv_list[:len(plot_metas)]
 
-        cprint("PlotDriver.py:164,初始化plot_driver")
+        # cprint("PlotDriver.py:164,初始化plot_driver")
 
         x_range = self.GetRealXrange(figure_config, plot_metas[0])
         plot_macd: Dict[KL_TYPE, bool] = {kl_type: conf.get("plot_macd", False) for kl_type, conf in plot_config.items()}
@@ -73,6 +73,7 @@ class CPlotDriver:
                     srange_begin = meta.sub_range_start_idx(x_range)
 
             ax.set_ylim(self.y_min, self.y_max)
+            plt.savefig("scatter_plot.png", dpi=300)
 
     def GetRealXrange(self, figure_config, meta: ZenPlotMeta):
         x_range = figure_config.get("x_range", 0)
@@ -154,6 +155,7 @@ class CPlotDriver:
 
     def save2img(self, path):
         plt.savefig(path, bbox_inches='tight')
+         
 
    
     def draw_klu(self, meta: ZenPlotMeta, ax: Axes, width=0.4, rugd=True, plot_mode="kl"):
@@ -210,12 +212,15 @@ class CPlotDriver:
                 raise CChanException(f"unknow plot mode={plot_mode}, must be one of kl/close/open/high/low", ErrCode.PLOT_ERR)
         
         
+        cprint("API结果**********************",Fore.RED)
+        print( meta.SegPoints)
          
-        self.echartsData={ "x":kluXdata,"y": kluYdata , 'Zbi_dates':  meta.Zbi_dates, 'Zbi_values': meta.Zbi_values}
+        self.echartsData={ "x":kluXdata,"y": kluYdata , "BiPoints":meta.BiPoints  ,'SegPoints':meta.SegPoints}
+        # self.echartsData={ "x":kluXdata,"y": kluYdata , "BiPoints":meta.BiPoints }
+        
         if _x:
             # 
             cprint ("PlotDriver.py:337:如果 x轴有数据,绘制K线图")
-           
             ax.plot(_x, _y)
         else:
             cprint ("PlotDriver.py:341:x轴没有数据")
@@ -250,6 +255,7 @@ class CPlotDriver:
         
         num_color="red",
         sub_lv_cnt=None,
+        
         facecolor='green',
         alpha=0.1,
         disp_end=False,
@@ -279,7 +285,9 @@ class CPlotDriver:
                 begin_idx = meta.bi_list[-sub_lv_cnt].begin_x
             y_begin, y_end = ax.get_ylim()
             x_end = int(ax.get_xlim()[1])
-            ax.fill_between(range(begin_idx, x_end + 1), y_begin, y_end, facecolor=facecolor, alpha=alpha)
+            
+            # ax.fill_between(range(begin_idx, x_end + 1), y_begin, y_end, facecolor=facecolor, alpha=alpha)
+            ax.fill_between(range(begin_idx, x_end + 1), y_begin, y_end, facecolor="red", alpha=alpha)
 
 
     # 画线段 
@@ -288,8 +296,8 @@ class CPlotDriver:
         meta: ZenPlotMeta,
         ax: Axes,
         lv,
-        width=3,
-        color="g",
+        width=1,
+        color="#f411e9", # 线段颜色
         sub_lv_cnt=None,
         facecolor='green',
         alpha=0.1,

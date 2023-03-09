@@ -108,7 +108,7 @@ class CBiList:
 
     def add_new_bi(self, pre_klc, cur_klc, is_sure=True):
         
-        cprint(  "添加新笔 add_new_bi",pcolor= Fore.RED)    
+        # cprint(  "添加新笔 add_new_bi",pcolor= Fore.RED)    
         
         
         self.bi_list.append(CBi(pre_klc, cur_klc, idx=len(self.bi_list), is_sure=is_sure))

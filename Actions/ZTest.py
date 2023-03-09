@@ -51,11 +51,11 @@ async def ZTest():
             "plot_kline": True,
             # "plot_kline": False,
             "plot_kline_combine": True,
-            # "plot_bi": True,
+            "plot_bi": True,
             # "plot_bi": False,
             # 'plot_boll': True,
             # "plot_seg": False,
-            # "plot_seg": True,
+            "plot_seg": True,
             
             # "plot_eigen": True,
             # "plot_segseg": False,    
@@ -105,47 +105,7 @@ async def ZTest():
             )
 
         cprint(  " notebook.ipynb:100:plot_driver",pcolor= Fore.RED)    
-        print( plot_driver.version) 
-        print( type (plot_driver.echartsData))
-
-        kline = Kline()
-        kline.set_global_opts(
-                xaxis_opts=opts.AxisOpts(is_scale=True),
-                
-                yaxis_opts=opts.AxisOpts(
-                    is_scale=True,
-                    splitarea_opts=opts.SplitAreaOpts(
-                        is_show=True, areastyle_opts=opts.AreaStyleOpts(opacity=1)
-                    ),
-                ),
-                tooltip_opts=opts.TooltipOpts(is_show=True,
-                                                   # 鼠标移动或者点击时触发
-                                                   trigger_on="mousemove|click"),
-                datazoom_opts=[opts.DataZoomOpts(pos_bottom="-2%")],
-            )
-
-
-        per_js = """function (param) {return param.substring(2,10);}"""
-
-       
-        kline.add_xaxis(plot_driver.echartsData['x'])
-        kline.add_yaxis("K 线图", plot_driver.echartsData['y'])
-        kline.set_global_opts(title_opts=opts.TitleOpts(title="xxx"),
-                                    xaxis_opts=opts.AxisOpts(name_rotate=60,
-                                                            # axislabel_opts=opts.LabelOpts(rotate=65, formatter=JsCode(per_js)) ,
-                                                            # axislabel_opts={"rotate":45}
-                                                            ))
-                
-
-
-        grid_chart = Grid(init_opts=opts.InitOpts(width='100%', height='800px' , theme='dark'))
-        grid_chart.add(
-            kline,
-            grid_opts=opts.GridOpts(width="100%", height="95%", pos_left='2%', ),
-        )
-        grid_chart.render_notebook()    
-        jsons=grid_chart.dump_options();
-        return plot_driver.echartsData;
+        return plot_driver.echartsData
 
 
 

@@ -82,10 +82,10 @@ class BuySellPointList(Generic[LINE_TYPE, LINE_LIST_TYPE]):
             )
         else:
             return
-        cprint("BSPointList.py 85:添加买卖点函数-->")
-        cprint("BSPointList.py 86:Will append")
+        # cprint("BSPointList.py 85:添加买卖点函数-->")
+        # cprint("BSPointList.py 86:Will append")
         # BuySellPoint.BS_Point.CBS_Point
-        cprint(bsp)
+        # cprint(bsp)
         if is_target_bsp:
             self.lst.append(bsp)
         if bs_type in [BSP_TYPE.T1, BSP_TYPE.T1P]:

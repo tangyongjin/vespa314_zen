@@ -18,13 +18,9 @@ chan = APIRouter(
 @chan.post('/ZenTest')
 async def ZenTest(item: dict):
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
-    
-    
-    # json_compatible_item_data = jsonable_encoder({"code":200,"charts":['aa','bb']})
     json_compatible_item_data=await ZTest()
-    # print(json_compatible_item_data )
-    # return json.dumps(json_compatible_item_data)
-    return JSONResponse(  {"code":200,"echartsData": json_compatible_item_data }  )
+    print( json_compatible_item_data )
+    return JSONResponse(  {"code":200,"echartsData": jsonable_encoder(json_compatible_item_data) }  )
  
 
  
