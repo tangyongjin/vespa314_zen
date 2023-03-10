@@ -21,7 +21,7 @@ class ZenPlotMeta:
         self.klc_list: List[Cklc_meta] = [Cklc_meta(klc) for klc in kl_list.lst]
         self.datetick = [klu.time.to_str() for klu in self.klu_iter()]
         self.klu_len = sum(len(klc.klu_list) for klc in self.klc_list)
-        self.bi_list = [CBi_meta(bi) for bi in kl_list.bi_list]
+        self.bi_list = [Bi_meta(bi) for bi in kl_list.bi_list]
         # 得到echarts 版本的 笔s
         self.BiPoints  = self.GET_BiPoints_echarts(kl_list.bi_list )
         # 得到echarts 版本的 线段
@@ -40,13 +40,41 @@ class ZenPlotMeta:
                 
         
         self.segseg_list: List[Seg_meta] = [Seg_meta(segseg) for segseg in kl_list.segseg_list]
-        self.zs_lst: List[CZS_meta] = [CZS_meta(zs) for zs in kl_list.zs_list]
-        self.segzs_lst: List[CZS_meta] = [CZS_meta(segzs) for segzs in kl_list.segzs_list]
-
+        
+        # 走势/中枢?
+        self.zs_lst: List[ZS_meta] = [ZS_meta(zs) for zs in kl_list.zs_list]
+        cprint("中枢", Fore.RED)
+        print(self.zs_lst)
+        # print every element in the list
+        for xzs in self.zs_lst:
+            print( vars(xzs)    )
+       
+         
+        # self.ZsArea: List[ZS_meta_echarts] = [ZS_meta_echarts(zs) for zs in kl_list.zs_list]
+        
+        
+        self.segzs_lst: List[ZS_meta] = [ZS_meta(segzs) for segzs in kl_list.segzs_list]
+        
         self.bs_point_lst: List[CBS_Point_meta] = [CBS_Point_meta(bs_point, is_seg=False) for bs_point in kl_list.bs_point_lst]
         self.seg_bsp_lst: List[CBS_Point_meta] = [CBS_Point_meta(seg_bsp, is_seg=True) for seg_bsp in kl_list.seg_bs_point_lst]
 
     
+    # def  GET_SegPoints_echarts(self, kl_list_seg_list):
+    #      echart_SegPoints=[]
+    #      print(type(kl_list_seg_list))
+    #      for seg in kl_list_seg_list:
+    #         tmpSeg=Seg_meta_echarts(seg)
+    #         # point1={ "date": tmpSeg.begin_x, "value":tmpSeg.begin_y}
+    #         # point2={ "date": tmpSeg.end_x, "value":tmpSeg.end_y}
+            
+    #         tmpArea=[ {"coord":[tmpSeg.begin_x, tmpSeg.begin_y]},{ "coord":[tmpSeg.end_x,tmpSeg.end_y]}]
+    #         cprint("矩形区域:>>>>>>>>>>>>>>>>>>>>>>>>*****************",Fore.RED)
+    #         print(tmpArea)
+    #         echart_SegPoints.append( { "tmpArea":tmpArea, "is_sure":tmpSeg.is_sure } ) 
+         
+         
+    #      return echart_SegPoints 
+          
     def  GET_SegPoints_echarts(self, kl_list_seg_list):
          echart_SegPoints=[]
          print(type(kl_list_seg_list))
@@ -70,9 +98,7 @@ class ZenPlotMeta:
          
         #  return BiPoints
          _SegPoints  = [[d['date'].__str__(), d['value']] for d in echart_SegPoints ]
-         return _SegPoints 
-          
-        
+         return _SegPoints     
         
         
         
@@ -153,7 +179,7 @@ class Cklc_meta:
         self.klu_list = list(klc.lst)
 
 
-class CBi_meta:
+class Bi_meta:
     def __init__(self, bi: CBi):
         self.idx = bi.idx
         self.dir = bi.dir
@@ -194,14 +220,14 @@ class Seg_meta:
 class Seg_meta_echarts:
     def __init__(self, seg: CSeg):
         if type(seg.start_bi) == CBi:
-            cprint("类型是CBi",Fore.RED)
+            # cprint("类型是CBi",Fore.RED)
             self.begin_x = seg.start_bi.get_begin_klu()
             self.begin_y = seg.start_bi.get_begin_val()
             self.end_x = seg.end_bi.get_end_klu()
             self.end_y = seg.end_bi.get_end_val()
         else:
             assert type(seg.start_bi) == CSeg
-            cprint("类型是CSeg",Fore.RED)
+            # cprint("类型是CSeg",Fore.RED)
             self.begin_x = seg.start_bi.start_bi.get_begin_klu()
             self.begin_y = seg.start_bi.start_bi.get_begin_val()
             self.end_x = seg.end_bi.end_bi.get_end_klu()
@@ -219,10 +245,10 @@ class Seg_meta_echarts:
         self.end_x=self.end_x.time.__str__()
         
         
-        print( self.begin_x)
-        print( self.begin_y) 
-        print( self.end_x)
-        print( self.end_y)
+        # print( self.begin_x)
+        # print( self.begin_y) 
+        # print( self.end_x)
+        # print( self.end_y)
 
 
 
@@ -246,7 +272,7 @@ class CEigenFX_meta:
         self.fx = eigenFX.ele[1].fx
 
 
-class CZS_meta:
+class ZS_meta:
     def __init__(self, zs: CZS):
         self.low = zs.low
         self.high = zs.high
@@ -255,8 +281,10 @@ class CZS_meta:
         self.w = self.end - self.begin
         self.h = self.high - self.low
         self.is_sure = zs.is_sure
-        self.sub_zs_lst = [CZS_meta(t) for t in zs.sub_zs_lst]
+        self.sub_zs_lst = [ZS_meta(t) for t in zs.sub_zs_lst]
         self.is_onebi_zs = zs.is_one_bi_zs()
+        
+        
 
 
 class CBS_Point_meta:

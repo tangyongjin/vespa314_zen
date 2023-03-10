@@ -73,9 +73,6 @@ class CChan:
 
     def load_stock_data(self, stockapi_instance: CCommonStockApi, lv) -> Iterable[CKLine_Unit]:
         stock_data=stockapi_instance.get_kl_data()
-        cprint("Chan.py:75 stock_data>>>>>>>>>>>>>>>>>")
-        cprint(stock_data)
-        cprint("Chan.py:77 <<<<<<<<<<<<<<<<<<<<<")
         
         for KLU_IDX, klu in enumerate( stock_data):
             klu.set_idx(KLU_IDX)

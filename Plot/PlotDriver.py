@@ -8,7 +8,7 @@ from Tools.DebugTool import cprint
 from Chan import CChan
 from Common.CEnum import BI_DIR, FX_TYPE, KL_TYPE, KLINE_DIR, TREND_TYPE
 from Common.ChanException import CChanException, ErrCode
-from .PlotMeta import CBi_meta, ZenPlotMeta, CZS_meta
+from .PlotMeta import Bi_meta, ZenPlotMeta, ZS_meta
 from colorama import Fore, Back, Style
 
 
@@ -27,13 +27,11 @@ class CPlotDriver:
         plot_config = parse_plot_config(plot_config, chan.lv_list)
         plot_metas = GetPlotMeta(chan, figure_config)
        
-        # cprint("PlotDriver.py:39,plot_metas",Fore.YELLOW) 
-        # print(  vars ( plot_metas[0] )  )
         
         
         self.lv_lst = chan.lv_list[:len(plot_metas)]
 
-        # cprint("PlotDriver.py:164,初始化plot_driver")
+       
 
         x_range = self.GetRealXrange(figure_config, plot_metas[0])
         plot_macd: Dict[KL_TYPE, bool] = {kl_type: conf.get("plot_macd", False) for kl_type, conf in plot_config.items()}
@@ -594,7 +592,7 @@ def show_func_helper(func):
             print(f"\t{name}: {para.default}")
 
 
-def add_zs_text(ax: Axes, zs_meta: CZS_meta, fontsize, text_color):
+def add_zs_text(ax: Axes, zs_meta: ZS_meta, fontsize, text_color):
     ax.text(
         zs_meta.begin,
         zs_meta.low,
@@ -764,7 +762,7 @@ def GetPlotMeta(chan: CChan, figure_config) -> List[ZenPlotMeta]:
     return plot_metas
 
 
-def plot_bi_element(bi: CBi_meta, ax: Axes, color: str):
+def plot_bi_element(bi: Bi_meta, ax: Axes, color: str):
     if bi.id_sure:
         ax.plot([bi.begin_x, bi.end_x], [bi.begin_y, bi.end_y], color=color)
     else:
