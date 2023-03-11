@@ -42,38 +42,40 @@ class ZenPlotMeta:
         self.segseg_list: List[Seg_meta] = [Seg_meta(segseg) for segseg in kl_list.segseg_list]
         
         # 走势/中枢?
-        self.zs_lst: List[ZS_meta] = [ZS_meta(zs) for zs in kl_list.zs_list]
-        cprint("中枢", Fore.RED)
-        print(self.zs_lst)
-        # print every element in the list
-        for xzs in self.zs_lst:
-            print( vars(xzs)    )
+        # _tmpZsLst= [ZS_meta(zs) for zs in kl_list.zs_list]
+        self.zs_lst: List[ZS_meta] =  [ZS_meta(zs) for zs in kl_list.zs_list]
+        cprint("走势/中枢***************",Fore.RED)
+        # print(  _tmpZsLst  )
        
-         
-        # self.ZsArea: List[ZS_meta_echarts] = [ZS_meta_echarts(zs) for zs in kl_list.zs_list]
-        
+        # fo echarts  
+        self.ZsAreas = self.GET_ZsArea_echarts(   self.zs_lst ) 
         
         self.segzs_lst: List[ZS_meta] = [ZS_meta(segzs) for segzs in kl_list.segzs_list]
         
         self.bs_point_lst: List[CBS_Point_meta] = [CBS_Point_meta(bs_point, is_seg=False) for bs_point in kl_list.bs_point_lst]
         self.seg_bsp_lst: List[CBS_Point_meta] = [CBS_Point_meta(seg_bsp, is_seg=True) for seg_bsp in kl_list.seg_bs_point_lst]
 
-    
-    # def  GET_SegPoints_echarts(self, kl_list_seg_list):
-    #      echart_SegPoints=[]
-    #      print(type(kl_list_seg_list))
-    #      for seg in kl_list_seg_list:
-    #         tmpSeg=Seg_meta_echarts(seg)
-    #         # point1={ "date": tmpSeg.begin_x, "value":tmpSeg.begin_y}
-    #         # point2={ "date": tmpSeg.end_x, "value":tmpSeg.end_y}
-            
-    #         tmpArea=[ {"coord":[tmpSeg.begin_x, tmpSeg.begin_y]},{ "coord":[tmpSeg.end_x,tmpSeg.end_y]}]
-    #         cprint("矩形区域:>>>>>>>>>>>>>>>>>>>>>>>>*****************",Fore.RED)
-    #         print(tmpArea)
-    #         echart_SegPoints.append( { "tmpArea":tmpArea, "is_sure":tmpSeg.is_sure } ) 
-         
-         
-    #      return echart_SegPoints 
+    def  GET_ZsArea_echarts(self, kl_list_zs_list):
+         ZsAreas=[];
+         cprint("走势/中枢?", Fore.RED)
+        #  print(self.zs_lst)
+         # print every element in the list
+         for xzs in kl_list_zs_list:
+            print( type(xzs.begin_kl  ) )
+            print( vars(xzs) )
+            print( xzs.begin_kl.time.__str__() )
+            print( xzs.end_kl.time.__str__())
+            tmp= [
+              {
+                "coord": [xzs.begin_kl.time.__str__(), xzs.low],
+              },
+              {
+                "coord": [xzs.end_kl.time.__str__(), xzs.high],
+              },
+            ]
+            ZsAreas.append(tmp)
+         return ZsAreas
+   
           
     def  GET_SegPoints_echarts(self, kl_list_seg_list):
          echart_SegPoints=[]
@@ -276,8 +278,12 @@ class ZS_meta:
     def __init__(self, zs: CZS):
         self.low = zs.low
         self.high = zs.high
+    #   for echarts
+        self.begin_kl = zs.begin
         self.begin = zs.begin.idx
         self.end = zs.end.idx
+    #   for echarts
+        self.end_kl = zs.end
         self.w = self.end - self.begin
         self.h = self.high - self.low
         self.is_sure = zs.is_sure

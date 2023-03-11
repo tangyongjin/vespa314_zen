@@ -142,6 +142,8 @@ class CPlotDriver:
             self.draw_bs_point(zenPltMeta, ax, **plot_para.get('bsp', {}))
         if plot_config.get("plot_segbsp", False):
             self.draw_seg_bs_point(zenPltMeta, ax, **plot_para.get('seg_bsp', {}))
+        
+        plt.savefig('111debug.png', bbox_inches='tight')
 
     def ShowDrawFuncHelper(self):
         # 写README的时候显示所有画图函数的参数和默认值
@@ -210,10 +212,8 @@ class CPlotDriver:
         
         
         cprint("API结果**********************",Fore.RED)
-        print( zenPltMeta.SegPoints)
-         
-        self.echartsData={ "x":kluXdata,"y": kluYdata , "BiPoints":zenPltMeta.BiPoints  ,'SegPoints':zenPltMeta.SegPoints}
-        # self.echartsData={ "x":kluXdata,"y": kluYdata , "BiPoints":zenPltMeta.BiPoints }
+        # print( zenPltMeta.SegPoints)
+        self.echartsData={ "x":kluXdata,"y": kluYdata , "BiPoints":zenPltMeta.BiPoints  ,'SegPoints':zenPltMeta.SegPoints,"ZsAreas":zenPltMeta.ZsAreas}
         
         if _x:
             # 
