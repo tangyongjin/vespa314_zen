@@ -65,14 +65,7 @@ class ZenPlotMeta:
             print( vars(xzs) )
             print( xzs.begin_kl.time.__str__() )
             print( xzs.end_kl.time.__str__())
-            tmp= [
-              {
-                "coord": [xzs.begin_kl.time.__str__(), xzs.low],
-              },
-              {
-                "coord": [xzs.end_kl.time.__str__(), xzs.high],
-              },
-            ]
+            tmp= { "is_sure": xzs.is_sure, "start": [xzs.begin_kl.time.__str__(), xzs.low], "end": [xzs.end_kl.time.__str__(), xzs.high] }             
             ZsAreas.append(tmp)
          return ZsAreas
    

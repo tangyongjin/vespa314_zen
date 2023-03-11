@@ -143,7 +143,7 @@ class CPlotDriver:
         if plot_config.get("plot_segbsp", False):
             self.draw_seg_bs_point(zenPltMeta, ax, **plot_para.get('seg_bsp', {}))
         
-        plt.savefig('111debug.png', bbox_inches='tight')
+        # plt.savefig('111debug.png', bbox_inches='tight')
 
     def ShowDrawFuncHelper(self):
         # 写README的时候显示所有画图函数的参数和默认值
