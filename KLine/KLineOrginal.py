@@ -10,7 +10,7 @@ from Math.TrendModel import CTrendModel
 from .TradeInfo import CTradeInfo
 
 
-class CKLine_Unit:
+class KLineOrginal:
     def __init__(self, kl_dict, autofix=False):
         # _time, _close, _open, _high, _low, _extra_info={}
         self.kl_type = None
@@ -26,10 +26,10 @@ class CKLine_Unit:
         self.trade_info = CTradeInfo(kl_dict)
 
         self.sub_kl_list = []  # 次级别KLU列表
-        self.sup_kl: Optional[CKLine_Unit] = None  # 指向更高级别KLU
+        self.sup_kl: Optional[KLineOrginal] = None  # 指向更高级别KLU
 
-        from KLine.KLine import CKLine
-        self.__klc: Optional[CKLine] = None  # 指向KLine
+        from KLine.KLine import KLineCombined
+        self.__klc: Optional[KLineCombined] = None  # 指向KLine
 
         # self.macd: Optional[CMACD_item] = None
         # self.boll: Optional[BOLL_Metric] = None
@@ -72,7 +72,7 @@ class CKLine_Unit:
     def add_chindren(self, child):
         self.sub_kl_list.append(child)
 
-    def set_parent(self, parent: 'CKLine_Unit'):
+    def set_parent(self, parent: 'KLineOrginal'):
         self.sup_kl = parent
 
     def get_children(self):

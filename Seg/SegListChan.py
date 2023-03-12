@@ -1,4 +1,4 @@
-from Bi.BiList import CBiList
+from Bi.BiList import BiList
 from Common.CEnum import BI_DIR, SEG_TYPE
 
 from .EigenFX import CEigenFX
@@ -20,7 +20,7 @@ class CSegListChan(CSegListComm):
                 # 如果确定线段的分形的第三元素包含不确定笔，也需要重新算，不然线段分形元素的高低点可能不对
                 self.lst = self.lst[:-1]
 
-    def update(self, bi_lst: CBiList):
+    def update(self, bi_lst: BiList):
         self.do_init()
         if len(self) == 0:
             self.cal_seg_sure(bi_lst, begin_idx=0)
@@ -28,7 +28,7 @@ class CSegListChan(CSegListComm):
             self.cal_seg_sure(bi_lst, begin_idx=self[-1].end_bi.idx+1)
         self.collect_left_seg(bi_lst)
 
-    def cal_seg_sure(self, bi_lst: CBiList, begin_idx: int):
+    def cal_seg_sure(self, bi_lst: BiList, begin_idx: int):
         up_eigen = CEigenFX(BI_DIR.UP, lv=self.lv)  # 上升线段下降笔
         down_eigen = CEigenFX(BI_DIR.DOWN, lv=self.lv)  # 下降线段上升笔
         last_seg_dir = None if len(self) == 0 else self[-1].dir
@@ -56,7 +56,7 @@ class CSegListChan(CSegListComm):
                 self.treat_fx_eigen(fx_eigen, bi_lst)
                 break
 
-    def treat_fx_eigen(self, fx_eigen, bi_lst: CBiList):
+    def treat_fx_eigen(self, fx_eigen, bi_lst: BiList):
         _test = fx_eigen.can_be_end(bi_lst)
         end_bi_idx = fx_eigen.GetPeakBiIdx()
         if _test in [True, None]:  # None表示反向分型找到尾部也没找到

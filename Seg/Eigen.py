@@ -1,9 +1,9 @@
-from Bi.Bi import CBi
-from Combiner.KLine_Combiner import CKLine_Combiner
+from Bi.Bi import Bi
+from Combiner.KLine_Combiner import KLine_Combiner
 from Common.CEnum import BI_DIR, FX_TYPE
 
 
-class CEigen(CKLine_Combiner[CBi]):
+class CEigen(KLine_Combiner[Bi]):
     def __init__(self, bi, _dir):
         super(CEigen, self).__init__(bi, _dir)
         self.gap = False

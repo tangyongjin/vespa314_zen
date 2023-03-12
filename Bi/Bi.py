@@ -2,12 +2,12 @@ from typing import List, Optional
 from Common.cache import make_cache
 from Common.CEnum import BI_DIR, BI_TYPE, DATA_FIELD, FX_TYPE, MACD_ALGO
 from Common.ChanException import CChanException, ErrCode
-from KLine.KLine import CKLine
-from KLine.KLineOrginal import CKLine_Unit
+from KLine.KLine import KLineCombined
+from KLine.KLineOrginal import KLineOrginal
 
 
-class CBi:
-    def __init__(self, bigin_klc: CKLine, end_klc: CKLine, idx: int, is_sure: bool):
+class Bi:
+    def __init__(self, bigin_klc: KLineCombined, end_klc: KLineCombined, idx: int, is_sure: bool):
         # self.__begin_klc = bigin_klc
         # self.__end_klc = end_klc
         self.__dir = None
@@ -19,17 +19,17 @@ class CBi:
         self.__is_sure = is_sure
         self.__sure_end = None
 
-        self.__klc_lst: List[CKLine] = []
+        self.__klc_lst: List[KLineCombined] = []
         self.__seg_idx: Optional[int] = None
 
-        from Seg.Seg import CSeg
-        self.parent_seg: Optional[CSeg[CBi]] = None  # 在哪个线段里面
+        from Seg.Seg import Seg
+        self.parent_seg: Optional[Seg[Bi]] = None  # 在哪个线段里面
 
-        from BuySellPoint.BS_Point import CBS_Point
-        self.bsp: Optional[CBS_Point] = None  # 尾部是不是买卖点
+        from BuySellPoint.BS_Point import BuySel_Point
+        self.bsp: Optional[BuySel_Point] = None  # 尾部是不是买卖点
 
-        self.next: Optional[CBi] = None
-        self.pre: Optional[CBi] = None
+        self.next: Optional[Bi] = None
+        self.pre: Optional[Bi] = None
 
     def clean_cache(self):
         self._memoize_cache = {}
@@ -76,9 +76,9 @@ class CBi:
         except Exception as e:
             raise CChanException(f"{self.idx}:{self.begin_klc[0].time}~{self.end_klc[-1].time}笔的方向和收尾位置不一致!", ErrCode.BI_ERR) from e
 
-    def set(self, bigin_klc: CKLine, end_klc: CKLine):
-        self.__begin_klc: CKLine = bigin_klc
-        self.__end_klc: CKLine = end_klc
+    def set(self, bigin_klc: KLineCombined, end_klc: KLineCombined):
+        self.__begin_klc: KLineCombined = bigin_klc
+        self.__end_klc: KLineCombined = end_klc
         if bigin_klc.fx == FX_TYPE.BOTTOM:
             self.__dir = BI_DIR.UP
         elif bigin_klc.fx == FX_TYPE.TOP:
@@ -97,14 +97,14 @@ class CBi:
         return self.end_klc.high if self.is_up() else self.end_klc.low
 
     @make_cache
-    def get_begin_klu(self) -> CKLine_Unit:
+    def get_begin_klu(self) -> KLineOrginal:
         if self.is_up():
             return self.begin_klc.get_peak_klu(is_high=False)
         else:
             return self.begin_klc.get_peak_klu(is_high=True)
 
     @make_cache
-    def get_end_klu(self) -> CKLine_Unit:
+    def get_end_klu(self) -> KLineOrginal:
         if self.is_up():
             return self.end_klc.get_peak_klu(is_high=True)
         else:
@@ -144,7 +144,7 @@ class CBi:
     def is_up(self):
         return self.dir == BI_DIR.UP
 
-    def update_virtual_end(self, new_klc: CKLine):
+    def update_virtual_end(self, new_klc: KLineCombined):
         self.__sure_end = self.end_klc
         self.update_new_end(new_klc)
         self.__is_sure = False
@@ -160,7 +160,7 @@ class CBi:
     def is_virtual_end(self):
         return self.sure_end is not None
 
-    def update_new_end(self, new_klc: CKLine):
+    def update_new_end(self, new_klc: KLineCombined):
         self.__end_klc = new_klc
         self.check()
         self.clean_cache()

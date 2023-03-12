@@ -28,15 +28,15 @@ def cprint(pobj, pcolor = Fore.GREEN):
                 print(  len(pobj))
                 print ('\n'.join([ str(myelement) for myelement in pobj ]))
          
-          if  type(pobj).__name__ == 'CKLine_Unit':
-                print("CKLine_Unit")
+          if  type(pobj).__name__ == 'KLineOrginal':
+                print("KLineOrginal")
                 print(vars(pobj))
           
           if  type(pobj).__name__ == 'Seg_meta':
                 print(vars(pobj))
 
-          if  type(pobj).__name__ == 'CBS_Point':
-                print("CBS_Point")
+          if  type(pobj).__name__ == 'BuySel_Point':
+                print("BuySel_Point")
                 print(vars(pobj))
  
                       

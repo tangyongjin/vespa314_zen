@@ -1,14 +1,14 @@
 from typing import Generic, List, Optional, TypeVar
 
-from Bi.Bi import CBi
+from Bi.Bi import Bi
 from Common.CEnum import BSP_TYPE
-from Seg.Seg import CSeg
+from Seg.Seg import Seg
 
-LINE_TYPE = TypeVar('LINE_TYPE', CBi, CSeg)
+LINE_TYPE = TypeVar('LINE_TYPE', Bi, Seg)
 
 
-class CBS_Point(Generic[LINE_TYPE]):
-    def __init__(self, bi: LINE_TYPE, is_buy, bs_type: BSP_TYPE, relate_bsp1: Optional['CBS_Point']):
+class BuySel_Point(Generic[LINE_TYPE]):
+    def __init__(self, bi: LINE_TYPE, is_buy, bs_type: BSP_TYPE, relate_bsp1: Optional['BuySel_Point']):
         self.bi: LINE_TYPE = bi
         self.klu = bi.get_end_klu()
         self.is_buy = is_buy

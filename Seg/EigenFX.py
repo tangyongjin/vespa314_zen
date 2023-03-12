@@ -1,7 +1,7 @@
 from typing import List, Optional
 
-from Bi.Bi import CBi
-from Bi.BiList import CBiList
+from Bi.Bi import Bi
+from Bi.BiList import BiList
 from Common.CEnum import BI_DIR, FX_TYPE, KLINE_DIR, SEG_TYPE
 from Common.ChanException import CChanException, ErrCode
 from Common.func_util import revert_bi_dir
@@ -14,16 +14,16 @@ class CEigenFX:
         self.lv = lv
         self.dir = _dir  # 线段方向
         self.ele: List[Optional[CEigen]] = [None, None, None]
-        self.lst: List[CBi] = []
+        self.lst: List[Bi] = []
         self.exclude_included = exclude_included
         self.kl_dir = KLINE_DIR.UP if _dir == BI_DIR.UP else KLINE_DIR.DOWN
-        self.last_evidence_bi: Optional[CBi] = None
+        self.last_evidence_bi: Optional[Bi] = None
 
-    def treat_first_ele(self, bi: CBi) -> bool:
+    def treat_first_ele(self, bi: Bi) -> bool:
         self.ele[0] = CEigen(bi, self.kl_dir)
         return False
 
-    def treat_second_ele(self, bi: CBi) -> bool:
+    def treat_second_ele(self, bi: Bi) -> bool:
         assert self.ele[0] is not None
         combine_dir = self.ele[0].try_add(bi, exclude_included=self.exclude_included)
         if combine_dir != KLINE_DIR.COMBINE:  # 不能合并
@@ -33,7 +33,7 @@ class CEigenFX:
                 return self.reset()
         return False
 
-    def treat_third_ele(self, bi: CBi) -> bool:
+    def treat_third_ele(self, bi: Bi) -> bool:
         assert self.ele[0] is not None
         assert self.ele[1] is not None
         self.last_evidence_bi = bi
@@ -49,7 +49,7 @@ class CEigenFX:
         is_fx = (self.is_up() and fx == FX_TYPE.TOP) or (self.is_down() and fx == FX_TYPE.BOTTOM)
         return True if is_fx else self.reset()
 
-    def add(self, bi: CBi) -> bool:  # 返回是否出现分形
+    def add(self, bi: Bi) -> bool:  # 返回是否出现分形
         assert bi.dir != self.dir
         self.lst.append(bi)
         if self.ele[0] is None:  # 第一元素
@@ -76,7 +76,7 @@ class CEigenFX:
 
         return False
 
-    def can_be_end(self, bi_lst: CBiList):
+    def can_be_end(self, bi_lst: BiList):
         assert self.ele[1] is not None
         if self.ele[1].gap:
             assert self.ele[0] is not None
@@ -127,7 +127,7 @@ class CEigenFX:
                 return True
         return False
 
-    def find_revert_fx(self, bi_list: CBiList, begin_idx: int, thred_value: float, break_thred: float):
+    def find_revert_fx(self, bi_list: BiList, begin_idx: int, thred_value: float, break_thred: float):
         COMMON_COMBINE = True  # 是否用普通分形合并规则处理
         # 如果返回None，表示找到最后了
         first_bi_dir = bi_list[begin_idx].dir  # down则是要找顶分型

@@ -3,22 +3,22 @@ from typing import Generic, Iterable, List, Optional, Self, TypeVar, Union, over
 from Common.cache import make_cache
 from Common.CEnum import FX_TYPE, KLINE_DIR
 from Common.ChanException import CChanException, ErrCode
-from KLine.KLineOrginal import CKLine_Unit
+from KLine.KLineOrginal import KLineOrginal
 
 from .Combine_Item import CCombine_Item
 
 T = TypeVar('T')
 
 
-class CKLine_Combiner(Generic[T]):
-    def __init__(self, kl_unit: T, _dir):
-        item = CCombine_Item(kl_unit)
+class KLine_Combiner(Generic[T]):
+    def __init__(self, kl_orginal: T, _dir):
+        item = CCombine_Item(kl_orginal)
         self.__time_begin = item.time_begin
         self.__time_end = item.time_end
         self.__high = item.high
         self.__low = item.low
 
-        self.__lst: List[T] = [kl_unit]  # 本级别每一根单位K线
+        self.__lst: List[T] = [kl_orginal]  # 本级别每一根单位K线
 
         self.__dir = _dir
         self.__fx = FX_TYPE.UNKNOWN
@@ -85,7 +85,7 @@ class CKLine_Combiner(Generic[T]):
         _dir = self.test_combine(combine_item, exclude_included, allow_top_equal)
         if _dir == KLINE_DIR.COMBINE:
             self.__lst.append(unit_kl)
-            if isinstance(unit_kl, CKLine_Unit):
+            if isinstance(unit_kl, KLineOrginal):
                 unit_kl.set_klc(self)
             if self.dir == KLINE_DIR.UP:
                 if combine_item.high != combine_item.low or combine_item.high != self.high:  # 处理一字K线

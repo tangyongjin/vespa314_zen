@@ -1,14 +1,14 @@
 from typing import List
 import time
-from Bi.Bi import CBi
-from BuySellPoint.BS_Point import CBS_Point
+from Bi.Bi import Bi
+from BuySellPoint.BS_Point import BuySel_Point
 from Common.CEnum import FX_TYPE ,BI_DIR
-from KLine.KLine import CKLine
+from KLine.KLine import KLineCombined
 from KLine.KLine_List import CKLine_List
 from Seg.Eigen import CEigen
 from Seg.EigenFX import CEigenFX
-from Seg.Seg import CSeg
-from ZS.ZS import CZS
+from Seg.Seg import Seg
+from ZS.ZS import ZS
 from Tools.DebugTool import cprint
 from colorama import Fore, Back, Style
 
@@ -123,12 +123,12 @@ class ZenPlotMeta:
             point1={}
             point2={}
 
-            if xxxbi._CBi__dir ==BI_DIR.UP:
-                point1={ "date":xxxbi._CBi__begin_klc.time_end, "value": xxxbi._CBi__begin_klc.low  }
-                point2={ "date":xxxbi._CBi__end_klc.time_end, "value":xxxbi._CBi__end_klc.high }
+            if xxxbi._Bi__dir ==BI_DIR.UP:
+                point1={ "date":xxxbi._Bi__begin_klc.time_end, "value": xxxbi._Bi__begin_klc.low  }
+                point2={ "date":xxxbi._Bi__end_klc.time_end, "value":xxxbi._Bi__end_klc.high }
             else:   
-                point1={ "date":xxxbi._CBi__begin_klc.time_end, "value": xxxbi._CBi__begin_klc.high  }
-                point2={ "date":xxxbi._CBi__end_klc.time_end, "value":xxxbi._CBi__end_klc.low }
+                point1={ "date":xxxbi._Bi__begin_klc.time_end, "value": xxxbi._Bi__begin_klc.high  }
+                point2={ "date":xxxbi._Bi__end_klc.time_end, "value":xxxbi._Bi__end_klc.low }
                 
                 
             # bi_orginal_list    
@@ -182,7 +182,7 @@ class ZenPlotMeta:
 
 
 class Cklc_meta:
-    def __init__(self, klc: CKLine):
+    def __init__(self, klc: KLineCombined):
         self.high = klc.high
         self.low = klc.low
         # self.volume = klc.volume
@@ -194,7 +194,7 @@ class Cklc_meta:
 
 
 class Bi_meta:
-    def __init__(self, bi: CBi):
+    def __init__(self, bi: Bi):
         self.idx = bi.idx
         self.dir = bi.dir
         self.type = bi.type
@@ -206,14 +206,14 @@ class Bi_meta:
 
 
 class Seg_meta:
-    def __init__(self, seg: CSeg):
-        if type(seg.start_bi) == CBi:
+    def __init__(self, seg: Seg):
+        if type(seg.start_bi) == Bi:
             self.begin_x = seg.start_bi.get_begin_klu().idx
             self.begin_y = seg.start_bi.get_begin_val()
             self.end_x = seg.end_bi.get_end_klu().idx
             self.end_y = seg.end_bi.get_end_val()
         else:
-            assert type(seg.start_bi) == CSeg
+            assert type(seg.start_bi) == Seg
             self.begin_x = seg.start_bi.start_bi.get_begin_klu().idx
             self.begin_y = seg.start_bi.start_bi.get_begin_val()
             self.end_x = seg.end_bi.end_bi.get_end_klu().idx
@@ -232,15 +232,15 @@ class Seg_meta:
 
 
 class Seg_meta_echarts:
-    def __init__(self, seg: CSeg):
-        if type(seg.start_bi) == CBi:
+    def __init__(self, seg: Seg):
+        if type(seg.start_bi) == Bi:
             # cprint("类型是CBi",Fore.RED)
             self.begin_x = seg.start_bi.get_begin_klu()
             self.begin_y = seg.start_bi.get_begin_val()
             self.end_x = seg.end_bi.get_end_klu()
             self.end_y = seg.end_bi.get_end_val()
         else:
-            assert type(seg.start_bi) == CSeg
+            assert type(seg.start_bi) == Seg
             # cprint("类型是CSeg",Fore.RED)
             self.begin_x = seg.start_bi.start_bi.get_begin_klu()
             self.begin_y = seg.start_bi.start_bi.get_begin_val()
@@ -287,7 +287,7 @@ class CEigenFX_meta:
 
 
 class ZS_meta:
-    def __init__(self, zs: CZS):
+    def __init__(self, zs: ZS):
         self.low = zs.low
         self.high = zs.high
     #   for echarts
@@ -306,7 +306,7 @@ class ZS_meta:
 
 
 class BS_Point_meta:
-    def __init__(self, bsp: CBS_Point, is_seg):
+    def __init__(self, bsp: BuySel_Point, is_seg):
         self.is_buy = bsp.is_buy
         self.type = bsp.type2str()
         self.is_seg = is_seg

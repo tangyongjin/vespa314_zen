@@ -515,8 +515,8 @@ else:  # 绘制动画
     - AUTYPE.NONE
 - config：`CChanConfig` 类，缠论元素计算参数配置，参见下文 `CChanConfig`
 - extra_kl：额外K线，常用于补充 `data_src` 的数据，比如离线 `data_src` 只有到昨天为止的数据，今天开仓需要加上今天实时获得的部分K线数据；默认为 None；
-    - 如果是个列表：每个元素必须为描述 klu 的 `CKLine_Unit` 类；此时如果 `lv_list` 参数有多个级别，则会报错
-    - 如果是个字典，key 是 `lv_list` 参数里面的每个级别，value 是数组，每个元素是 `CKLine_Unit` 类
+    - 如果是个列表：每个元素必须为描述 klu 的 `KLineOrginal` 类；此时如果 `lv_list` 参数有多个级别，则会报错
+    - 如果是个字典，key 是 `lv_list` 参数里面的每个级别，value 是数组，每个元素是 `KLineOrginal` 类
 
 >  如果需要部署成服务对外提供接口，调用 `CChan.toJson()` 可返回所有相关信息。
 
@@ -982,7 +982,7 @@ create table if not exists {table_name}(
 方法是实现一个类，继承自 `CCommonStockApi`，接受输入参数为 code, k_type, begin_date, end_date；
 并在该类里面实现两个方法：
 
-1. `get_kl_data(self)`：该方法为一个生成器，yield 返回每一根K线信息 `CKLine_Unit(idx, k_type, item_dict)`，其中 item 为：
+1. `get_kl_data(self)`：该方法为一个生成器，yield 返回每一根K线信息 `KLineOrginal(idx, k_type, item_dict)`，其中 item 为：
 ```
 {
     DATA_FIELD.FIELD_TIME: time,  # 必须是框架实现的CTime类
@@ -1007,14 +1007,14 @@ create table if not exists {table_name}(
   - `return_klu`: bool，是否返回K线类
 - 返回值
   - 一个字典，其中key就是输入`code_list`里面的各个code，各个value分别为：
-    - 如果return_klu==True，返回`CKLine_Unit`类
+    - 如果return_klu==True，返回`KLineOrginal`类
     - 如果return_klu==False，返回字典`Dict[str, float]`，为是包含 name,price,low,high,open,yesterdayClose 五个 key 的字典，其中price,low,high必须有，其他选填
   - 如果获取失败，对应股票的键值返回None
 
 ```python
 class CCustomSnapshot:
     @classmethod
-    def query(cls, code_list: List[str], return_klu: bool) -> Dict[str, Optional[CKLine_Unit | Dict[str, float]]]:
+    def query(cls, code_list: List[str], return_klu: bool) -> Dict[str, Optional[KLineOrginal | Dict[str, float]]]:
         ...
 ```
 
@@ -1045,10 +1045,10 @@ def priceQuery(codelist: List[str], engine: str, return_klu: bool = False):
 ### 线段模型
 线段的计算坊间也有多种不同的计算方法，框架提供基于特征序列，基于笔破坏，都业华课程中所谓的 1+1 终结等几个实现；
 
-如需实现自己的算法，实现一个类，继承自 `CSegListComm`，实现一个函数 `update(self, bi_list: CBiList)` 即可，bi_list 包含了所有已知笔的信息；
+如需实现自己的算法，实现一个类，继承自 `CSegListComm`，实现一个函数 `update(self, bi_list: BiList)` 即可，bi_list 包含了所有已知笔的信息；
 
 其中 `CSegListComm` 有两个属性：
-- `CSegListComm.lst: List[CSeg]` 存储所有计算出来的线段，必须按顺序存储；
+- `CSegListComm.lst: List[Seg]` 存储所有计算出来的线段，必须按顺序存储；
 - `CSegListComm.config: CSegConfig` 线段配置类，如果需要传入自己实现的配置参数，可通过这个类实现
 
 > 必须要说明一下的是，`CSegListComm` 提供了大量对还没确定K线计算虚线段的通用处理函数，这不仅是整个项目里面逻辑最复杂最难的部分，也是代码最难以维护的部分。。之前这个文件代码撸了好几天，里面加了大量的检测断言，验收标准是对全量 A 股港股美股 20000+股票计算不出错，当前已经完全不敢改这个文件了，但是由于已经例行运行了差不多 7 个月没出过任何错了，所以，应该问题不大。。
@@ -1056,7 +1056,7 @@ def priceQuery(codelist: List[str], engine: str, return_klu: bool = False):
 ### bsp 买卖点
 形态学买卖点如果需要开发自己设计的买卖点，可以参考 `BuySellPoint/BuySellPointList.py` 开发一个类，对外暴露以下方法：
 ```python
-def cal(self, bi_list: CBiList, seg_list: CSegListComm) -> None:
+def cal(self, bi_list: BiList, seg_list: CSegListComm) -> None:
     ...
 ```
 
@@ -1064,7 +1064,7 @@ def cal(self, bi_list: CBiList, seg_list: CSegListComm) -> None:
 - `bi_list`：包含所有笔的信息
 - `seg_list`：包含所有线段的信息（内部可以通过 `seg_list[n].zs_lst[i]` 来获取第 n 个线段的第 i 个中枢）
 
-`cal` 方法实现的就是将计算出来的买卖点类 `CBS_Point` 加入到 `self.lst: List[CBS_Point]` 中；
+`cal` 方法实现的就是将计算出来的买卖点类 `BuySel_Point` 加入到 `self.lst: List[BuySel_Point]` 中；
 
 ### cbsp 买卖点策略
 本框架支持方便地开发用户自己买卖点策略，比如一买底分型确定时买入这种；
@@ -1094,7 +1094,7 @@ class CCustomStragety(CStragety):
 需要实现的函数解释如下：
 - `def try_open(self, chan: CChan, lv: int)`: 判断当下最后一根出现时是否是买卖时机，如果是则返回 CCustomBSP 来设置买卖点相关信息，否则返回 None
 
-- `def try_close(self, chan: CChan, lv: int)`: 判断当下对之前已经开仓且未平仓的买卖点决定是否平仓,如果需要平仓,调 CCustomBSP.do_close(price: float, close_klu: CKLine_Unit, reason: str, quota=None)即可。
+- `def try_close(self, chan: CChan, lv: int)`: 判断当下对之前已经开仓且未平仓的买卖点决定是否平仓,如果需要平仓,调 CCustomBSP.do_close(price: float, close_klu: KLineOrginal, reason: str, quota=None)即可。
 
 - `bsp_signal(self, chan: CChan, lv: int)` -> List[CSignal]: 如果需要上线实盘交易时需要实现，返回当前数据哪些股票可能在第二天如果满足自定义的突破条件时就会变成真正的 cbsp，算出信号后框架会自动落库，第二天实盘交易时只会跟踪产生信号的股票；
 

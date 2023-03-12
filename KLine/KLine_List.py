@@ -1,18 +1,18 @@
 from typing import List, Union, overload
 
-from Bi.Bi import CBi
-from Bi.BiList import CBiList
+from Bi.Bi import Bi
+from Bi.BiList import BiList
 from BuySellPoint.BuySellPointList import BuySellPointList
 from ChanConfig import CChanConfig
 from Common.CEnum import KLINE_DIR, SEG_TYPE
 from Common.ChanException import CChanException, ErrCode
-from Seg.Seg import CSeg
+from Seg.Seg import Seg
 from Seg.SegConfig import CSegConfig
 from Seg.SegListComm import CSegListComm
 from ZS.ZSList import CZSList
 
-from .KLine import CKLine
-from .KLineOrginal import CKLine_Unit
+from .KLine import KLineCombined
+from .KLineOrginal import KLineOrginal
 
 
 def get_seglist_instance(seg_config: CSegConfig, lv) -> CSegListComm:
@@ -26,28 +26,28 @@ class CKLine_List:
     def __init__(self, kl_type, conf: CChanConfig):
         self.kl_type = kl_type
         self.config = conf
-        self.lst: List[CKLine] = []  # K线列表，可递归  元素KLine类型
-        self.bi_list = CBiList(bi_conf=conf.bi_conf)
-        self.seg_list: CSegListComm[CBi] = get_seglist_instance(seg_config=conf.seg_conf, lv=SEG_TYPE.BI)
-        self.segseg_list: CSegListComm[CSeg[CBi]] = get_seglist_instance(seg_config=conf.seg_conf, lv=SEG_TYPE.SEG)
+        self.lst: List[KLineCombined] = []  # K线列表，可递归  元素KLine类型
+        self.bi_list = BiList(bi_conf=conf.bi_conf)
+        self.seg_list: CSegListComm[Bi] = get_seglist_instance(seg_config=conf.seg_conf, lv=SEG_TYPE.BI)
+        self.segseg_list: CSegListComm[Seg[Bi]] = get_seglist_instance(seg_config=conf.seg_conf, lv=SEG_TYPE.SEG)
 
         self.zs_list = CZSList(zs_config=conf.zs_conf)
         self.segzs_list = CZSList(zs_config=conf.zs_conf)
 
-        self.bs_point_lst = BuySellPointList[CBi, CBiList](bs_point_config=conf.bs_point_conf)
-        self.seg_bs_point_lst = BuySellPointList[CSeg, CSegListComm](bs_point_config=conf.seg_bs_point_conf)
+        self.bs_point_lst = BuySellPointList[Bi, BiList](bs_point_config=conf.bs_point_conf)
+        self.seg_bs_point_lst = BuySellPointList[Seg, CSegListComm](bs_point_config=conf.seg_bs_point_conf)
 
         self.metric_model_lst = conf.GetMetricModel()
 
         self.step_calculation = self.need_cal_step_by_step()
 
     @overload
-    def __getitem__(self, index: int) -> CKLine: ...
+    def __getitem__(self, index: int) -> KLineCombined: ...
 
     @overload
-    def __getitem__(self, index: slice) -> List[CKLine]: ...
+    def __getitem__(self, index: slice) -> List[KLineCombined]: ...
 
-    def __getitem__(self, index: Union[slice, int]) -> Union[List[CKLine], CKLine]:
+    def __getitem__(self, index: Union[slice, int]) -> Union[List[KLineCombined], KLineCombined]:
         return self.lst[index]
 
     def __len__(self):
@@ -73,14 +73,14 @@ class CKLine_List:
     def need_cal_step_by_step(self):
         return self.config.triger_step
 
-    def add_single_klu(self, klu: CKLine_Unit):
+    def add_single_klu(self, klu: KLineOrginal):
         klu.set_metric(self.metric_model_lst)
         if len(self.lst) == 0:
-            self.lst.append(CKLine(klu, idx=0))
+            self.lst.append(KLineCombined(klu, idx=0))
         else:
             _dir = self.lst[-1].try_add(klu)
             if _dir != KLINE_DIR.COMBINE:  # 不需要合并K线
-                self.lst.append(CKLine(klu, idx=len(self.lst), _dir=_dir))
+                self.lst.append(KLineCombined(klu, idx=len(self.lst), _dir=_dir))
                 if len(self.lst) >= 3:
                     self.lst[-2].update_fx(self.lst[-3], self.lst[-1])
                 if self.bi_list.update_bi(self.lst[-2], self.lst[-1], self.step_calculation) and self.step_calculation:

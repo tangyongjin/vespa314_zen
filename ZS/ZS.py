@@ -1,28 +1,28 @@
 from typing import Generic, List, Optional, TypeVar
 
-from Bi.Bi import CBi
+from Bi.Bi import Bi
 from BuySellPoint.BSPointConfig import CPointConfig
 from Common.cache import make_cache
 from Common.ChanException import CChanException, ErrCode
 from Common.func_util import has_overlap
-from KLine.KLineOrginal import CKLine_Unit
-from Seg.Seg import CSeg
+from KLine.KLineOrginal import KLineOrginal
+from Seg.Seg import Seg
 
-LINE_TYPE = TypeVar('LINE_TYPE', CBi, "CSeg")
+LINE_TYPE = TypeVar('LINE_TYPE', Bi, "Seg")
 
 
-class CZS(Generic[LINE_TYPE]):
+class ZS(Generic[LINE_TYPE]):
     def __init__(self, lst: Optional[List[LINE_TYPE]], is_sure=True):
         # begin/end：永远指向 klu
         # low/high: 中枢的范围
         # peak_low/peak_high: 中枢所涉及到的笔的最大值，最小值
         self.__is_sure = is_sure
-        self.__sub_zs_lst: List[CZS] = []
+        self.__sub_zs_lst: List[ZS] = []
 
         if lst is None:
             return
 
-        self.__begin: CKLine_Unit = lst[0].get_begin_klu()
+        self.__begin: KLineOrginal = lst[0].get_begin_klu()
         self.__begin_bi: LINE_TYPE = lst[0]  # 中枢内部的笔
 
         # self.__low = None
@@ -30,8 +30,8 @@ class CZS(Generic[LINE_TYPE]):
         # self.__mid = None
         self.update_zs_range(lst)
 
-        # self.__end: CKLine_Unit = None
-        # self.__end_bi: CBi = None  # 中枢内部的笔
+        # self.__end: KLineOrginal = None
+        # self.__end_bi: Bi = None  # 中枢内部的笔
         self.__peak_high = float("-inf")
         self.__peak_low = float("inf")
         for item in lst:
@@ -98,8 +98,8 @@ class CZS(Generic[LINE_TYPE]):
         return self.begin_bi.idx == self.end_bi.idx
 
     def update_zs_end(self, item):
-        self.__end: CKLine_Unit = item.get_end_klu()
-        self.__end_bi: CBi = item
+        self.__end: KLineOrginal = item.get_end_klu()
+        self.__end_bi: Bi = item
         if item._low() < self.peak_low:
             self.__peak_low = item._low()
         if item._high() > self.peak_high:
@@ -113,7 +113,7 @@ class CZS(Generic[LINE_TYPE]):
         else:
             return _str
 
-    def combine(self, zs2: 'CZS', combine_mode) -> bool:
+    def combine(self, zs2: 'ZS', combine_mode) -> bool:
         if zs2.is_one_bi_zs():
             return False
         if combine_mode == 'zs':
@@ -132,7 +132,7 @@ class CZS(Generic[LINE_TYPE]):
         else:
             raise CChanException(f"${combine_mode} is unsupport zs conbine mode", ErrCode.PARA_ERROR)
 
-    def do_combine(self, zs2: 'CZS'):
+    def do_combine(self, zs2: 'ZS'):
         if len(self.sub_zs_lst) == 0:
             self.__sub_zs_lst.append(self.make_copy())
         self.__sub_zs_lst.append(zs2)
@@ -157,7 +157,7 @@ class CZS(Generic[LINE_TYPE]):
     def in_range(self, item):
         return has_overlap(self.low, self.high, item._low(), item._high())
 
-    def is_inside(self, seg: CSeg):
+    def is_inside(self, seg: Seg):
         return seg.start_bi.idx <= self.begin_bi.idx <= seg.end_bi.idx
 
     def is_divergence(self, config: CPointConfig):
@@ -170,7 +170,7 @@ class CZS(Generic[LINE_TYPE]):
         else:
             return out_metric <= config.divergence_rate*in_metric, out_metric/in_metric
 
-    def init_from_zs(self, zs: 'CZS'):
+    def init_from_zs(self, zs: 'ZS'):
         self.__begin = zs.begin
         self.__end = zs.end
         self.__low = zs.low
@@ -182,8 +182,8 @@ class CZS(Generic[LINE_TYPE]):
         self.__bi_in = zs.bi_in
         self.__bi_out = zs.bi_out
 
-    def make_copy(self) -> 'CZS':
-        copy = CZS(lst=None, is_sure=self.is_sure)
+    def make_copy(self) -> 'ZS':
+        copy = ZS(lst=None, is_sure=self.is_sure)
         copy.init_from_zs(zs=self)
         return copy
 

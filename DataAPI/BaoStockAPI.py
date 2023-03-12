@@ -2,7 +2,7 @@ import baostock as bs
 from Common.CEnum import AUTYPE, DATA_FIELD, KL_TYPE
 from Common.CTime import CTime
 from Common.func_util import kltype_lt_day, str2float
-from KLine.KLineOrginal import CKLine_Unit
+from KLine.KLineOrginal import KLineOrginal
 import pandas as pd
 import copy
 import pprint
@@ -108,7 +108,7 @@ class CBaoStock(CCommonStockApi):
         if rs.error_code != '0':
             raise Exception(rs.error_msg)
         while rs.error_code == '0' and rs.next():
-            yield CKLine_Unit(create_item_dict(rs.get_row_data(), GetColumnNameFromFieldList(fields)))
+            yield KLineOrginal(create_item_dict(rs.get_row_data(), GetColumnNameFromFieldList(fields)))
 
  
 

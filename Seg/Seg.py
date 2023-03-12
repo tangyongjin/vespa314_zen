@@ -1,16 +1,16 @@
 from typing import Generic, List, Optional, Self, TypeVar
 
-from Bi.Bi import CBi
+from Bi.Bi import Bi
 from Common.CEnum import BI_DIR, MACD_ALGO
 from Common.ChanException import CChanException, ErrCode
-from KLine.KLineOrginal import CKLine_Unit
+from KLine.KLineOrginal import KLineOrginal
 
 from .EigenFX import CEigenFX
 
-LINE_TYPE = TypeVar('LINE_TYPE', CBi, "CSeg")
+LINE_TYPE = TypeVar('LINE_TYPE', Bi, "Seg")
 
 
-class CSeg(Generic[LINE_TYPE]):
+class Seg(Generic[LINE_TYPE]):
     def __init__(self, idx: int, start_bi: LINE_TYPE, end_bi: LINE_TYPE, is_sure=True, seg_dir=None, reason="normal"):
         assert start_bi.idx == 0 or start_bi.dir == end_bi.dir or not is_sure, f"{start_bi.idx} {end_bi.idx} {start_bi.dir} {end_bi.dir}"
         self.idx = idx
@@ -19,17 +19,17 @@ class CSeg(Generic[LINE_TYPE]):
         self.is_sure = is_sure
         self.dir = end_bi.dir if seg_dir is None else seg_dir
 
-        from ZS.ZS import CZS
-        self.zs_lst: List[CZS[LINE_TYPE]] = []
+        from ZS.ZS import ZS
+        self.zs_lst: List[ZS[LINE_TYPE]] = []
 
         self.eigen_fx: Optional[CEigenFX] = None
         self.seg_idx = None  # 线段的线段用
-        self.parent_seg: Optional[CSeg] = None  # 在哪个线段里面
+        self.parent_seg: Optional[Seg] = None  # 在哪个线段里面
         self.pre: Optional[Self] = None
         self.next: Optional[Self] = None
 
-        from BuySellPoint.BS_Point import CBS_Point
-        self.bsp: Optional[CBS_Point] = None  # 尾部是不是买卖点
+        from BuySellPoint.BS_Point import BuySel_Point
+        self.bsp: Optional[BuySel_Point] = None  # 尾部是不是买卖点
 
         self.bi_list: List[LINE_TYPE] = []  # 仅通过self.update_bi_list来更新
         self.reason = reason
@@ -91,10 +91,10 @@ class CSeg(Generic[LINE_TYPE]):
     def amp(self):
         return abs(self.get_end_val() - self.get_begin_val())
 
-    def get_end_klu(self) -> CKLine_Unit:
+    def get_end_klu(self) -> KLineOrginal:
         return self.end_bi.get_end_klu()
 
-    def get_begin_klu(self) -> CKLine_Unit:
+    def get_begin_klu(self) -> KLineOrginal:
         return self.start_bi.get_begin_klu()
 
     def get_klu_cnt(self):

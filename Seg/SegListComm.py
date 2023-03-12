@@ -1,20 +1,20 @@
 import abc
 from typing import Generic, List, TypeVar, Union, overload
 
-from Bi.Bi import CBi
-from Bi.BiList import CBiList
+from Bi.Bi import Bi
+from Bi.BiList import BiList
 from Common.CEnum import BI_DIR, LEFT_SEG_METHOD, SEG_TYPE
 from Common.ChanException import CChanException, ErrCode
 
-from .Seg import CSeg
+from .Seg import Seg
 from .SegConfig import CSegConfig
 
-SUB_LINE_TYPE = TypeVar('SUB_LINE_TYPE', CBi, "CSeg")
+SUB_LINE_TYPE = TypeVar('SUB_LINE_TYPE', Bi, "Seg")
 
 
 class CSegListComm(Generic[SUB_LINE_TYPE]):
     def __init__(self, seg_config=CSegConfig(), lv=SEG_TYPE.BI):
-        self.lst: List[CSeg[SUB_LINE_TYPE]] = []
+        self.lst: List[Seg[SUB_LINE_TYPE]] = []
         self.lv = lv
         self.do_init()
         self.config = seg_config
@@ -26,18 +26,18 @@ class CSegListComm(Generic[SUB_LINE_TYPE]):
         yield from self.lst
 
     @overload
-    def __getitem__(self, index: int) -> CSeg[SUB_LINE_TYPE]: ...
+    def __getitem__(self, index: int) -> Seg[SUB_LINE_TYPE]: ...
 
     @overload
-    def __getitem__(self, index: slice) -> List[CSeg[SUB_LINE_TYPE]]: ...
+    def __getitem__(self, index: slice) -> List[Seg[SUB_LINE_TYPE]]: ...
 
-    def __getitem__(self, index: Union[slice, int]) -> Union[List[CSeg[SUB_LINE_TYPE]], CSeg[SUB_LINE_TYPE]]:
+    def __getitem__(self, index: Union[slice, int]) -> Union[List[Seg[SUB_LINE_TYPE]], Seg[SUB_LINE_TYPE]]:
         return self.lst[index]
 
     def __len__(self):
         return len(self.lst)
 
-    def left_bi_break(self, bi_lst: CBiList):
+    def left_bi_break(self, bi_lst: BiList):
         # 最后一个确定线段之后的笔有突破该线段最后一笔的
         if len(self) == 0:
             return False
@@ -49,7 +49,7 @@ class CSegListComm(Generic[SUB_LINE_TYPE]):
                 return True
         return False
 
-    def collect_first_seg(self, bi_lst: CBiList):
+    def collect_first_seg(self, bi_lst: BiList):
         if len(bi_lst) < 3:
             return
         if self.config.left_method == LEFT_SEG_METHOD.PEAK:
@@ -104,13 +104,13 @@ class CSegListComm(Generic[SUB_LINE_TYPE]):
         else:
             raise CChanException(f"unknown seg left_method = {self.config.left_method}", ErrCode.PARA_ERROR)
 
-    def collect_left_seg(self, bi_lst: CBiList):
+    def collect_left_seg(self, bi_lst: BiList):
         if len(self) == 0:
             self.collect_first_seg(bi_lst)
         else:
             self.collect_segs(bi_lst)
 
-    def collect_left_as_seg(self, bi_lst: CBiList):
+    def collect_left_as_seg(self, bi_lst: BiList):
         last_bi = bi_lst[-1]
         last_seg_end_bi = self[-1].end_bi
         if last_seg_end_bi.idx+1 >= len(bi_lst):
@@ -131,14 +131,14 @@ class CSegListComm(Generic[SUB_LINE_TYPE]):
         bi1_idx = 0 if len(self) == 0 else self[-1].end_bi.idx+1
         bi1 = bi_lst[bi1_idx]
         bi2 = bi_lst[end_bi_idx]
-        self.lst.append(CSeg(len(self.lst), bi1, bi2, is_sure=is_sure, seg_dir=seg_dir, reason=reason))
+        self.lst.append(Seg(len(self.lst), bi1, bi2, is_sure=is_sure, seg_dir=seg_dir, reason=reason))
 
         if len(self.lst) >= 2:
             self.lst[-2].next = self.lst[-1]
             self.lst[-1].pre = self.lst[-2]
         self.lst[-1].update_bi_list(bi_lst, bi1_idx, end_bi_idx)
 
-    def add_new_seg(self, bi_lst: CBiList, end_bi_idx: int, is_sure=True, seg_dir=None, split_first_seg=True, reason="normal"):
+    def add_new_seg(self, bi_lst: BiList, end_bi_idx: int, is_sure=True, seg_dir=None, split_first_seg=True, reason="normal"):
         try:
             self.try_add_new_seg(bi_lst, end_bi_idx, is_sure, seg_dir, split_first_seg, reason)
         except CChanException as e:
@@ -150,11 +150,11 @@ class CSegListComm(Generic[SUB_LINE_TYPE]):
         return True
 
     @abc.abstractmethod
-    def update(self, bi_lst: CBiList):
+    def update(self, bi_lst: BiList):
         ...
 
 
-def FindPeakBi(bi_lst: Union[CBiList, List[CBi]], is_high):
+def FindPeakBi(bi_lst: Union[BiList, List[Bi]], is_high):
     peak_val = float("-inf") if is_high else float("inf")
     peak_bi = None
     for bi in bi_lst:

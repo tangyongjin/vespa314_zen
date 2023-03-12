@@ -2,7 +2,7 @@ from Common.CEnum import FX_CHECK_METHOD
 from Common.ChanException import CChanException, ErrCode
 
 
-class CBiConfig:
+class BiConfig:
     def __init__(
         self,
         bi_algo="normal",

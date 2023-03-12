@@ -6,7 +6,7 @@ from pprint import pprint
 from Tools.DebugTool import cprint
 
 import pprint
-from BuySellPoint.BS_Point import CBS_Point
+from BuySellPoint.BS_Point import BuySel_Point
 from ChanConfig import CChanConfig
 from Common.CEnum import AUTYPE, DATA_SRC, KL_TYPE
 from Common.ChanException import CChanException, ErrCode
@@ -14,7 +14,7 @@ from Common.CTime import CTime
 from Common.func_util import check_kltype_order, kltype_lte_day
 from DataAPI.CommonStockAPI import CCommonStockApi
 from KLine.KLine_List import CKLine_List
-from KLine.KLineOrginal import CKLine_Unit
+from KLine.KLineOrginal import KLineOrginal
 
 
 def GetStockAPI(src):
@@ -71,7 +71,7 @@ class CChan:
         for idx in range(len(self.lv_list)):
             self.kl_datas[self.lv_list[idx]] = CKLine_List(self.lv_list[idx], conf=self.conf)
 
-    def load_stock_data(self, stockapi_instance: CCommonStockApi, lv) -> Iterable[CKLine_Unit]:
+    def load_stock_data(self, stockapi_instance: CCommonStockApi, lv) -> Iterable[KLineOrginal]:
         stock_data=stockapi_instance.get_kl_data()
         
         for KLU_IDX, klu in enumerate( stock_data):
@@ -133,7 +133,7 @@ class CChan:
         try:
             stockapi_cls.do_init()
             lv_klu_iter_lst = self.init_lv_klu_iter(stockapi_cls)
-            self.klu_cache: List[Optional[CKLine_Unit]] = [None for _ in self.lv_list]
+            self.klu_cache: List[Optional[KLineOrginal]] = [None for _ in self.lv_list]
             cprint("Chan.py:139--------------------------")
             print(self.klu_cache)
             self.klu_last_t = [CTime(1980, 1, 1, 0, 0) for _ in self.lv_list]
@@ -220,7 +220,7 @@ class CChan:
         else:
             raise CChanException("unspoourt query type", ErrCode.COMMON_ERROR)
 
-    def get_bsp(self, idx=None) -> List[CBS_Point]:
+    def get_bsp(self, idx=None) -> List[BuySel_Point]:
         if idx is not None:
             return sorted(self[idx].bs_point_lst.lst, key=lambda x: x.klu.time)
         assert len(self.lv_list) == 1

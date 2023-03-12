@@ -1,17 +1,17 @@
-from Combiner.KLine_Combiner import CKLine_Combiner
+from Combiner.KLine_Combiner import KLine_Combiner
 from Common.CEnum import FX_CHECK_METHOD, FX_TYPE, KLINE_DIR
 from Common.ChanException import CChanException, ErrCode
 from Common.func_util import has_overlap
-from KLine.KLineOrginal import CKLine_Unit
+from KLine.KLineOrginal import KLineOrginal
 
 
 # 合并后的K线
-class CKLine(CKLine_Combiner[CKLine_Unit]):
-    def __init__(self, kl_unit: CKLine_Unit, idx, _dir=KLINE_DIR.UP):
-        super(CKLine, self).__init__(kl_unit, _dir)
+class KLineCombined(KLine_Combiner[KLineOrginal]):
+    def __init__(self, kl_orginal: KLineOrginal, idx, _dir=KLINE_DIR.UP):
+        super(KLineCombined, self).__init__(kl_orginal, _dir)
         self.idx: int = idx
-        self.kl_type = kl_unit.kl_type
-        kl_unit.set_klc(self)
+        self.kl_type = kl_orginal.kl_type
+        kl_orginal.set_klc(self)
 
     # 定义Kline 打印的格式,加上 th 
     def __str__(self):
@@ -43,7 +43,7 @@ class CKLine(CKLine_Combiner[CKLine_Unit]):
         # 相同也算重叠，也就是没有gap
         return not has_overlap(self.get_klu_min_low(), self.get_klu_max_high(), self.next.get_klu_min_low(), self.next.get_klu_max_high(), equal=True)
 
-    def check_fx_valid(self, item2: "CKLine", method, for_virtual=False):
+    def check_fx_valid(self, item2: "KLineCombined", method, for_virtual=False):
         # for_virtual: 虚笔时使用
         assert self.next is not None and item2.pre is not None
         assert self.pre is not None

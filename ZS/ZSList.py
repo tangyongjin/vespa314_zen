@@ -1,18 +1,18 @@
 from typing import List, Union, overload
 
-from Bi.Bi import CBi
-from Bi.BiList import CBiList
+from Bi.Bi import Bi
+from Bi.BiList import BiList
 from Common.func_util import revert_bi_dir
-from Seg.Seg import CSeg
+from Seg.Seg import Seg
 from Seg.SegListComm import CSegListComm
 from ZS.ZSConfig import CZSConfig
 
-from .ZS import CZS
+from .ZS import ZS
 
 
 class CZSList:
     def __init__(self, zs_config=CZSConfig()):
-        self.zs_lst: List[CZS] = []
+        self.zs_lst: List[ZS] = []
 
         self.config = zs_config
         self.free_item_lst = []
@@ -29,7 +29,7 @@ class CZSList:
                 self.last_sure_pos = seg.end_bi.get_begin_klu().idx
                 return
 
-    def seg_need_cal(self, seg: CSeg):
+    def seg_need_cal(self, seg: Seg):
         return seg.end_bi.get_end_klu().idx > self.last_sure_pos
 
     def add_to_free_lst(self, item, is_sure):
@@ -46,7 +46,7 @@ class CZSList:
     def clear_free_lst(self):
         self.free_item_lst = []
 
-    def update(self, bi: CBi, is_sure=True):
+    def update(self, bi: Bi, is_sure=True):
         if len(self.free_item_lst) == 0 and self.try_add_to_end(bi):
             # zs_combine_mode=peak合并模式下会触发生效，=zs合并一定无效返回
             self.try_combine()  # 新形成的中枢尝试和之前的中枢合并
@@ -75,9 +75,9 @@ class CZSList:
                 lst = lst[-2:]
         min_high = min(item._high() for item in lst)
         max_low = max(item._low() for item in lst)
-        return CZS(lst, is_sure=is_sure) if min_high > max_low else None
+        return ZS(lst, is_sure=is_sure) if min_high > max_low else None
 
-    def cal_bi_zs(self, bi_lst: Union[CBiList, CSegListComm], seg_lst: CSegListComm):
+    def cal_bi_zs(self, bi_lst: Union[BiList, CSegListComm], seg_lst: CSegListComm):
         self.zs_lst = [zs for zs in self.zs_lst if zs.end.idx is not None and zs.end.idx <= self.last_sure_pos]
 
         for seg in seg_lst:
@@ -98,12 +98,12 @@ class CZSList:
         return len(self.zs_lst)
 
     @overload
-    def __getitem__(self, index: int) -> CZS: ...
+    def __getitem__(self, index: int) -> ZS: ...
 
     @overload
-    def __getitem__(self, index: slice) -> List[CZS]: ...
+    def __getitem__(self, index: slice) -> List[ZS]: ...
 
-    def __getitem__(self, index: Union[slice, int]) -> Union[List[CZS], CZS]:
+    def __getitem__(self, index: Union[slice, int]) -> Union[List[ZS], ZS]:
         return self.zs_lst[index]
 
     def try_combine(self):

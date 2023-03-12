@@ -1,6 +1,6 @@
 from typing import List, Union
 
-from Bi.BiConfig import CBiConfig
+from Bi.BiConfig import BiConfig
 from BuySellPoint.BSPointConfig import CBSPointConfig
 from Common.CEnum import TREND_TYPE
 from Common.ChanException import CChanException, ErrCode
@@ -17,7 +17,7 @@ class CChanConfig:
         if conf is None:
             conf = {}
         conf = ConfigWithCheck(conf)
-        self.bi_conf = CBiConfig(
+        self.bi_conf = BiConfig(
             bi_algo=conf.get("bi_algo", "normal"),
             is_strict=conf.get("bi_strict", True),
             bi_fx_check=conf.get("bi_fx_check", "strict"),
