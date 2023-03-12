@@ -4,9 +4,9 @@ from Bi.Bi import Bi
 from BuySellPoint.BS_Point import BuySel_Point
 from Common.CEnum import FX_TYPE ,BI_DIR
 from KLine.KLine import KLineCombined
-from KLine.KLine_List import CKLine_List
-from Seg.Eigen import CEigen
-from Seg.EigenFX import CEigenFX
+from KLine.KLine_List import KLineCombineList
+from Seg.Eigen import Eigen
+from Seg.EigenFX import EigenFX
 from Seg.Seg import Seg
 from ZS.ZS import ZS
 from Tools.DebugTool import cprint
@@ -15,7 +15,7 @@ from colorama import Fore, Back, Style
 
 
 class ZenPlotMeta: 
-    def __init__(self, kl_list: CKLine_List):
+    def __init__(self, kl_list: KLineCombineList):
         self.data = kl_list
 
         self.klc_list: List[Cklc_meta] = [Cklc_meta(klc) for klc in kl_list.lst]
@@ -268,7 +268,7 @@ class Seg_meta_echarts:
 
 
 class CEigen_meta:
-    def __init__(self, eigen: CEigen):
+    def __init__(self, eigen: Eigen):
         self.begin_x = eigen.lst[0].get_begin_klu().idx
         self.end_x = eigen.lst[-1].get_end_klu().idx
         self.begin_y = eigen.low
@@ -278,7 +278,7 @@ class CEigen_meta:
 
 
 class CEigenFX_meta:
-    def __init__(self, eigenFX: CEigenFX):
+    def __init__(self, eigenFX: EigenFX):
         self.ele = [CEigen_meta(ele) for ele in eigenFX.ele if ele is not None]
         assert len(self.ele) == 3
         assert eigenFX.ele[1] is not None

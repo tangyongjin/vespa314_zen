@@ -1,8 +1,7 @@
 from enum import IntEnum
 
 
-class ErrCode(IntEnum):
-    # chan err
+class ErrCode(IntEnum): 
     _CHAN_ERR_BEGIN = 0
     COMMON_ERROR = 1
     SRC_DATA_NOT_FOUND = 3
@@ -60,7 +59,7 @@ class ErrCode(IntEnum):
     _KL_ERR_END = 299
 
 
-class CChanException(Exception):
+class ChanException(Exception):
     def __init__(self, message, code=ErrCode.COMMON_ERROR):
         self.errcode = code
         self.msg = message
@@ -75,11 +74,11 @@ class CChanException(Exception):
 
 if __name__ == "__main__":
     def foo():
-        raise CChanException("XXX", ErrCode.CONFIG_ERROR)
+        raise ChanException("XXX", ErrCode.CONFIG_ERROR)
 
     try:
         foo()
-    except CChanException as e:
+    except ChanException as e:
         print(str(e.errcode))
         # python3.8 结果为： ErrCode.CONFIG_ERROR
         # python3.11 结果为：17

@@ -9,11 +9,11 @@ import pprint
 from BuySellPoint.BS_Point import BuySel_Point
 from ChanConfig import CChanConfig
 from Common.CEnum import AUTYPE, DATA_SRC, KL_TYPE
-from Common.ChanException import CChanException, ErrCode
+from Common.ChanException import ChanException, ErrCode
 from Common.CTime import CTime
 from Common.func_util import check_kltype_order, kltype_lte_day
 from DataAPI.CommonStockAPI import CCommonStockApi
-from KLine.KLine_List import CKLine_List
+from KLine.KLine_List import KLineCombineList
 from KLine.KLineOrginal import KLineOrginal
 
 
@@ -25,7 +25,7 @@ def GetStockAPI(src):
     if src in _dict:
         return _dict[src]
     if src.find("custom:") < 0:
-        raise CChanException("load src type error", ErrCode.SRC_DATA_TYPE_ERR)
+        raise ChanException("load src type error", ErrCode.SRC_DATA_TYPE_ERR)
     package_info = src.split(":")[1]
     package_name, cls_name = package_info.split(".")
     exec(f"from DataAPI.{package_name} import {cls_name}")
@@ -67,9 +67,9 @@ class CChan:
                 ...
 
     def do_init(self):
-        self.kl_datas: Dict[KL_TYPE, CKLine_List] = {}
+        self.kl_datas: Dict[KL_TYPE, KLineCombineList] = {}
         for idx in range(len(self.lv_list)):
-            self.kl_datas[self.lv_list[idx]] = CKLine_List(self.lv_list[idx], conf=self.conf)
+            self.kl_datas[self.lv_list[idx]] = KLineCombineList(self.lv_list[idx], conf=self.conf)
 
     def load_stock_data(self, stockapi_instance: CCommonStockApi, lv) -> Iterable[KLineOrginal]:
         stock_data=stockapi_instance.get_kl_data()
@@ -114,7 +114,7 @@ class CChan:
             try:
                 lv_klu_iter.append(self.get_load_stock_iter(stockapi_cls, lv))
                 valid_lv_list.append(lv)
-            except CChanException as e:
+            except ChanException as e:
                 if e.errcode == ErrCode.SRC_DATA_NOT_FOUND and self.conf.auto_skip_illegal_sub_lv:
                     if self.conf.print_warming:
                         print( "Chan.py:75", f"[WARMING-{self.code}]{lv}级别获取数据失败，跳过")
@@ -147,7 +147,7 @@ class CChan:
         finally:
             stockapi_cls.do_close()
         if len(self[0]) == 0:
-            raise CChanException("最高级别没有获得任何数据", ErrCode.NO_DATA)
+            raise ChanException("最高级别没有获得任何数据", ErrCode.NO_DATA)
 
     def set_klu_parent_relation(self, parent_klu, kline_unit, cur_lv, lv_idx):
         if self.conf.kl_data_check and kltype_lte_day(cur_lv) and kltype_lte_day(self.lv_list[lv_idx-1]):
@@ -176,7 +176,7 @@ class CChan:
                 try:
                     kline_unit = lv_klu_iter_lst[lv_idx].__next__()
                     if not kline_unit.time > self.klu_last_t[lv_idx]:
-                        raise CChanException("kline time err, cur={kline_unit.time}, last={self.klu_last_t[lv_idx]}", ErrCode.KL_NOT_MONOTONOUS)
+                        raise ChanException("kline time err, cur={kline_unit.time}, last={self.klu_last_t[lv_idx]}", ErrCode.KL_NOT_MONOTONOUS)
                     self.klu_last_t[lv_idx] = kline_unit.time
                 except StopIteration:
                     break
@@ -202,7 +202,7 @@ class CChan:
             if self.conf.print_warming:
                 print(f"[WARMING-{self.code}]父级别时间是{parent_klu.time}，次级别时间却是{sub_klu.time}")
             if len(self.kl_inconsistent_detail) >= self.conf.max_kl_inconsistent_cnt:
-                raise CChanException(f"父&子级别K线时间不一致条数超过{self.conf.max_kl_inconsistent_cnt}！！", ErrCode.KL_TIME_INCONSISTENT)
+                raise ChanException(f"父&子级别K线时间不一致条数超过{self.conf.max_kl_inconsistent_cnt}！！", ErrCode.KL_TIME_INCONSISTENT)
 
     def check_kl_align(self, kline_unit, lv_idx):
         if self.conf.kl_data_check and len(kline_unit.sub_kl_list) == 0:
@@ -210,15 +210,15 @@ class CChan:
             if self.conf.print_warming:
                 print(f"[WARMING-{self.code}]当前{kline_unit.time}没在次级别{self.lv_list[lv_idx+1]}找到K线！！")
             if self.kl_misalign_cnt >= self.conf.max_kl_misalgin_cnt:
-                raise CChanException(f"在次级别找不到K线条数超过{self.conf.max_kl_misalgin_cnt}！！", ErrCode.KL_DATA_NOT_ALIGN)
+                raise ChanException(f"在次级别找不到K线条数超过{self.conf.max_kl_misalgin_cnt}！！", ErrCode.KL_DATA_NOT_ALIGN)
 
-    def __getitem__(self, n) -> CKLine_List:
+    def __getitem__(self, n) -> KLineCombineList:
         if isinstance(n, KL_TYPE):
             return self.kl_datas[n]
         elif isinstance(n, int):
             return self.kl_datas[self.lv_list[n]]
         else:
-            raise CChanException("unspoourt query type", ErrCode.COMMON_ERROR)
+            raise ChanException("unspoourt query type", ErrCode.COMMON_ERROR)
 
     def get_bsp(self, idx=None) -> List[BuySel_Point]:
         if idx is not None:

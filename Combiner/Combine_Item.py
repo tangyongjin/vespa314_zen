@@ -1,4 +1,4 @@
-from Common.ChanException import CChanException, ErrCode
+from Common.ChanException import ChanException, ErrCode
 
 
 class CCombine_Item:
@@ -22,4 +22,4 @@ class CCombine_Item:
             self.high = item._high()
             self.low = item._low()
         else:
-            raise CChanException(f"{type(item)} is unsupport sub class of CCombine_Item", ErrCode.COMMON_ERROR)
+            raise ChanException(f"{type(item)} is unsupport sub class of CCombine_Item", ErrCode.COMMON_ERROR)

@@ -1,9 +1,9 @@
 from typing import Generic, List, Optional, TypeVar
 
 from Bi.Bi import Bi
-from BuySellPoint.BSPointConfig import CPointConfig
+from BuySellPoint.BSPointConfig import PointConfig
 from Common.cache import make_cache
-from Common.ChanException import CChanException, ErrCode
+from Common.ChanException import ChanException, ErrCode
 from Common.func_util import has_overlap
 from KLine.KLineOrginal import KLineOrginal
 from Seg.Seg import Seg
@@ -130,7 +130,7 @@ class ZS(Generic[LINE_TYPE]):
             else:
                 return False
         else:
-            raise CChanException(f"${combine_mode} is unsupport zs conbine mode", ErrCode.PARA_ERROR)
+            raise ChanException(f"${combine_mode} is unsupport zs conbine mode", ErrCode.PARA_ERROR)
 
     def do_combine(self, zs2: 'ZS'):
         if len(self.sub_zs_lst) == 0:
@@ -160,7 +160,7 @@ class ZS(Generic[LINE_TYPE]):
     def is_inside(self, seg: Seg):
         return seg.start_bi.idx <= self.begin_bi.idx <= seg.end_bi.idx
 
-    def is_divergence(self, config: CPointConfig):
+    def is_divergence(self, config: PointConfig):
         if not self.end_bi_break():  # 最后一笔必须突破中枢
             return False, None
         in_metric = self.get_bi_in().cal_macd_metric(config.macd_algo, is_reverse=False)

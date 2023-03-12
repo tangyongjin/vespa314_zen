@@ -5,37 +5,37 @@ from Bi.BiList import BiList
 from BuySellPoint.BuySellPointList import BuySellPointList
 from ChanConfig import CChanConfig
 from Common.CEnum import KLINE_DIR, SEG_TYPE
-from Common.ChanException import CChanException, ErrCode
+from Common.ChanException import ChanException, ErrCode
 from Seg.Seg import Seg
-from Seg.SegConfig import CSegConfig
-from Seg.SegListComm import CSegListComm
-from ZS.ZSList import CZSList
+from Seg.SegConfig import SegConfig
+from Seg.SegListComm import SegListComm
+from ZS.ZSList import ZSList
 
 from .KLine import KLineCombined
 from .KLineOrginal import KLineOrginal
 
 
-def get_seglist_instance(seg_config: CSegConfig, lv) -> CSegListComm:
+def get_seglist_instance(seg_config: SegConfig, lv) -> SegListComm:
     if seg_config.seg_algo != "chan":
-        raise CChanException(f"unsupport seg algoright:{seg_config.seg_algo}", ErrCode.PARA_ERROR)
+        raise ChanException(f"unsupport seg algoright:{seg_config.seg_algo}", ErrCode.PARA_ERROR)
     from Seg.SegListChan import CSegListChan
     return CSegListChan(seg_config, lv)
 
 
-class CKLine_List:
+class KLineCombineList:
     def __init__(self, kl_type, conf: CChanConfig):
         self.kl_type = kl_type
         self.config = conf
         self.lst: List[KLineCombined] = []  # K线列表，可递归  元素KLine类型
         self.bi_list = BiList(bi_conf=conf.bi_conf)
-        self.seg_list: CSegListComm[Bi] = get_seglist_instance(seg_config=conf.seg_conf, lv=SEG_TYPE.BI)
-        self.segseg_list: CSegListComm[Seg[Bi]] = get_seglist_instance(seg_config=conf.seg_conf, lv=SEG_TYPE.SEG)
+        self.seg_list: SegListComm[Bi] = get_seglist_instance(seg_config=conf.seg_conf, lv=SEG_TYPE.BI)
+        self.segseg_list: SegListComm[Seg[Bi]] = get_seglist_instance(seg_config=conf.seg_conf, lv=SEG_TYPE.SEG)
 
-        self.zs_list = CZSList(zs_config=conf.zs_conf)
-        self.segzs_list = CZSList(zs_config=conf.zs_conf)
+        self.zs_list = ZSList(zs_config=conf.zs_conf)
+        self.segzs_list = ZSList(zs_config=conf.zs_conf)
 
         self.bs_point_lst = BuySellPointList[Bi, BiList](bs_point_config=conf.bs_point_conf)
-        self.seg_bs_point_lst = BuySellPointList[Seg, CSegListComm](bs_point_config=conf.seg_bs_point_conf)
+        self.seg_bs_point_lst = BuySellPointList[Seg, SegListComm](bs_point_config=conf.seg_bs_point_conf)
 
         self.metric_model_lst = conf.GetMetricModel()
 

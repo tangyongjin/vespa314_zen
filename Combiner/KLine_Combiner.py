@@ -2,7 +2,7 @@ from typing import Generic, Iterable, List, Optional, Self, TypeVar, Union, over
 
 from Common.cache import make_cache
 from Common.CEnum import FX_TYPE, KLINE_DIR
-from Common.ChanException import CChanException, ErrCode
+from Common.ChanException import ChanException, ErrCode
 from KLine.KLineOrginal import KLineOrginal
 
 from .Combine_Item import CCombine_Item
@@ -75,7 +75,7 @@ class KLine_Combiner(Generic[T]):
         if (self.high < item.high and self.low < item.low):
             return KLINE_DIR.UP
         else:
-            raise CChanException("combine type unknown", ErrCode.COMBINER_ERR)
+            raise ChanException("combine type unknown", ErrCode.COMBINER_ERR)
 
     def try_add(self, unit_kl: T, exclude_included=False, allow_top_equal=None):
         # allow_top_equal = None普通模式
@@ -96,7 +96,7 @@ class KLine_Combiner(Generic[T]):
                     self.__high = min([self.high, combine_item.high])
                     self.__low = min([self.low, combine_item.low])
             else:
-                raise CChanException(f"KLINE_DIR = {self.dir} err!!! must be {KLINE_DIR.UP}/{KLINE_DIR.DOWN}", ErrCode.COMBINER_ERR)
+                raise ChanException(f"KLINE_DIR = {self.dir} err!!! must be {KLINE_DIR.UP}/{KLINE_DIR.DOWN}", ErrCode.COMBINER_ERR)
             self._time_end = combine_item.time_end
             self.clean_cache()
         # 返回UP/DOWN/COMBINE给KL_LIST，设置下一个的方向
@@ -111,14 +111,14 @@ class KLine_Combiner(Generic[T]):
         for kl in self.lst[::-1]:
             if CCombine_Item(kl).high == self.high:
                 return kl
-        raise CChanException("can't find peak...", ErrCode.COMBINER_ERR)
+        raise ChanException("can't find peak...", ErrCode.COMBINER_ERR)
 
     @make_cache
     def get_low_peak_klu(self) -> T:
         for kl in self.lst[::-1]:
             if CCombine_Item(kl).low == self.low:
                 return kl
-        raise CChanException("can't find peak...", ErrCode.COMBINER_ERR)
+        raise ChanException("can't find peak...", ErrCode.COMBINER_ERR)
 
     def update_fx(self, _pre: Self, _next: Self, exclude_included=False, allow_top_equal=None):
         # allow_top_equal = None普通模式

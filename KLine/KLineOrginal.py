@@ -1,11 +1,11 @@
 from typing import Dict, Optional
 
 from Common.CEnum import DATA_FIELD, TREND_TYPE
-from Common.ChanException import CChanException, ErrCode
+from Common.ChanException import ChanException, ErrCode
 from Common.CTime import CTime
 from Math.BOLL import BOLL_Metric, BollModel
 from Math.MACD import CMACD, CMACD_item
-from Math.TrendModel import CTrendModel
+from Math.TrendModel import TrendModel
 
 from .TradeInfo import CTradeInfo
 
@@ -62,12 +62,12 @@ class KLineOrginal:
             if autofix:
                 self.low = min([self.low, self.open, self.high, self.close])
             else:
-                raise CChanException(f"{self.time} low price={self.low} is not min of [low={self.low}, open={self.open}, high={self.high}, close={self.close}]", ErrCode.KL_DATA_INVALID)
+                raise ChanException(f"{self.time} low price={self.low} is not min of [low={self.low}, open={self.open}, high={self.high}, close={self.close}]", ErrCode.KL_DATA_INVALID)
         if self.high < max([self.low, self.open, self.high, self.close]):
             if autofix:
                 self.high = max([self.low, self.open, self.high, self.close])
             else:
-                raise CChanException(f"{self.time} high price={self.high} is not max of [low={self.low}, open={self.open}, high={self.high}, close={self.close}]", ErrCode.KL_DATA_INVALID)
+                raise ChanException(f"{self.time} high price={self.high} is not max of [low={self.low}, open={self.open}, high={self.high}, close={self.close}]", ErrCode.KL_DATA_INVALID)
 
     def add_chindren(self, child):
         self.sub_kl_list.append(child)
@@ -88,7 +88,7 @@ class KLineOrginal:
         for metric_model in metric_model_lst:
             if isinstance(metric_model, CMACD):
                 self.macd: CMACD_item = metric_model.add(self.close)
-            elif isinstance(metric_model, CTrendModel):
+            elif isinstance(metric_model, TrendModel):
                 if metric_model.type not in self.trend:
                     self.trend[metric_model.type] = {}
                 self.trend[metric_model.type][metric_model.T] = metric_model.add(self.close)

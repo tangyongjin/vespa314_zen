@@ -3,13 +3,13 @@ from typing import List, Union
 from Bi.BiConfig import BiConfig
 from BuySellPoint.BSPointConfig import CBSPointConfig
 from Common.CEnum import TREND_TYPE
-from Common.ChanException import CChanException, ErrCode
+from Common.ChanException import ChanException, ErrCode
 from Common.func_util import _parse_inf
 from Math.BOLL import BollModel
 from Math.MACD import CMACD
-from Math.TrendModel import CTrendModel
-from Seg.SegConfig import CSegConfig
-from ZS.ZSConfig import CZSConfig
+from Math.TrendModel import TrendModel
+from Seg.SegConfig import SegConfig
+from ZS.ZSConfig import ZSConfig
 
 
 class CChanConfig:
@@ -24,11 +24,11 @@ class CChanConfig:
             gap_as_kl=conf.get("gap_as_kl", True),
             bi_end_is_peak=conf.get('bi_end_is_peak', True),
         )
-        self.seg_conf = CSegConfig(
+        self.seg_conf = SegConfig(
             seg_algo=conf.get("seg_algo", "chan"),
             left_method=conf.get("left_seg_method", "peak"),
         )
-        self.zs_conf = CZSConfig(
+        self.zs_conf = ZSConfig(
             need_combine=conf.get("zs_combine", True),
             zs_combine_mode=conf.get("zs_combine_mode", "zs"),
             one_bi_zs=conf.get("one_bi_zs", False),
@@ -53,12 +53,12 @@ class CChanConfig:
         conf.check()
 
     def GetMetricModel(self):
-        res: List[Union[CMACD, CTrendModel, BollModel]] = [CMACD()]
-        res.extend(CTrendModel(TREND_TYPE.MEAN, mean_T) for mean_T in self.mean_metrics)
+        res: List[Union[CMACD, TrendModel, BollModel]] = [CMACD()]
+        res.extend(TrendModel(TREND_TYPE.MEAN, mean_T) for mean_T in self.mean_metrics)
 
         for trend_T in self.trend_metrics:
-            res.append(CTrendModel(TREND_TYPE.MAX, trend_T))
-            res.append(CTrendModel(TREND_TYPE.MIN, trend_T))
+            res.append(TrendModel(TREND_TYPE.MAX, trend_T))
+            res.append(TrendModel(TREND_TYPE.MIN, trend_T))
         res.append(BollModel(self.boll_n))
         return res
 
@@ -111,7 +111,7 @@ class CChanConfig:
                 exec(f"self.bs_point_conf.b_conf.set({k}, {v})")
                 exec(f"self.bs_point_conf.s_conf.set({k}, {v})")
             else:
-                raise CChanException(f"unknown para = {k}", ErrCode.PARA_ERROR)
+                raise ChanException(f"unknown para = {k}", ErrCode.PARA_ERROR)
         self.bs_point_conf.b_conf.parse_target_type()
         self.bs_point_conf.s_conf.parse_target_type()
 
@@ -137,4 +137,4 @@ class ConfigWithCheck:
     def check(self):
         if len(self.conf) > 0:
             invalid_key_lst = ",".join(list(self.conf.keys()))
-            raise CChanException(f"invalid CChanConfig: {invalid_key_lst}", ErrCode.PARA_ERROR)
+            raise ChanException(f"invalid CChanConfig: {invalid_key_lst}", ErrCode.PARA_ERROR)

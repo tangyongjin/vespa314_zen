@@ -1,13 +1,13 @@
 from Bi.BiList import BiList
 from Common.CEnum import BI_DIR, SEG_TYPE
 
-from .EigenFX import CEigenFX
-from .SegConfig import CSegConfig
-from .SegListComm import CSegListComm
+from .EigenFX import EigenFX
+from .SegConfig import SegConfig
+from .SegListComm import SegListComm
 
 
-class CSegListChan(CSegListComm):
-    def __init__(self, seg_config=CSegConfig(), lv=SEG_TYPE.BI):
+class CSegListChan(SegListComm):
+    def __init__(self, seg_config=SegConfig(), lv=SEG_TYPE.BI):
         super(CSegListChan, self).__init__(seg_config=seg_config, lv=lv)
 
     def do_init(self):
@@ -29,8 +29,8 @@ class CSegListChan(CSegListComm):
         self.collect_left_seg(bi_lst)
 
     def cal_seg_sure(self, bi_lst: BiList, begin_idx: int):
-        up_eigen = CEigenFX(BI_DIR.UP, lv=self.lv)  # 上升线段下降笔
-        down_eigen = CEigenFX(BI_DIR.DOWN, lv=self.lv)  # 下降线段上升笔
+        up_eigen = EigenFX(BI_DIR.UP, lv=self.lv)  # 上升线段下降笔
+        down_eigen = EigenFX(BI_DIR.DOWN, lv=self.lv)  # 下降线段上升笔
         last_seg_dir = None if len(self) == 0 else self[-1].dir
         for bi in bi_lst[begin_idx:]:
             fx_eigen = None

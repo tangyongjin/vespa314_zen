@@ -5,14 +5,14 @@ from Bi.BiList import BiList
 from Common.CEnum import BSP_TYPE
 from Common.func_util import has_overlap
 from Seg.Seg import Seg
-from Seg.SegListComm import CSegListComm
+from Seg.SegListComm import SegListComm
 from ZS.ZS import ZS
 
 from .BS_Point import BuySel_Point
-from .BSPointConfig import CBSPointConfig, CPointConfig
+from .BSPointConfig import CBSPointConfig, PointConfig
 
 LINE_TYPE = TypeVar('LINE_TYPE', Bi, Seg[Bi])
-LINE_LIST_TYPE = TypeVar('LINE_LIST_TYPE', BiList, CSegListComm[Bi])
+LINE_LIST_TYPE = TypeVar('LINE_LIST_TYPE', BiList, SegListComm[Bi])
 
 
 class BuySellPointList(Generic[LINE_TYPE, LINE_LIST_TYPE]):
@@ -37,7 +37,7 @@ class BuySellPointList(Generic[LINE_TYPE, LINE_LIST_TYPE]):
     def __getitem__(self, index: Union[slice, int]) -> Union[List[BuySel_Point], BuySel_Point]:
         return self.lst[index]
 
-    def cal(self, bi_list: LINE_LIST_TYPE, seg_list: CSegListComm[LINE_TYPE]):
+    def cal(self, bi_list: LINE_LIST_TYPE, seg_list: SegListComm[LINE_TYPE]):
         self.lst = [bsp for bsp in self.lst if bsp.klu.idx <= self.last_sure_pos]
         self.bsp1_lst = [bsp for bsp in self.bsp1_lst if bsp.klu.idx <= self.last_sure_pos]
 
@@ -47,7 +47,7 @@ class BuySellPointList(Generic[LINE_TYPE, LINE_LIST_TYPE]):
 
         self.update_last_pos(seg_list)
 
-    def update_last_pos(self, seg_list: CSegListComm):
+    def update_last_pos(self, seg_list: SegListComm):
         self.last_sure_pos = -1
         for seg in seg_list[::-1]:
             if seg.is_sure:
@@ -91,7 +91,7 @@ class BuySellPointList(Generic[LINE_TYPE, LINE_LIST_TYPE]):
         if bs_type in [BSP_TYPE.T1, BSP_TYPE.T1P]:
             self.bsp1_lst.append(bsp)
 
-    def cal_seg_bs1point(self, seg_list: CSegListComm[LINE_TYPE], bi_list: LINE_LIST_TYPE):
+    def cal_seg_bs1point(self, seg_list: SegListComm[LINE_TYPE], bi_list: LINE_LIST_TYPE):
         for seg in seg_list:
             if not self.seg_need_cal(seg):
                 continue
@@ -106,7 +106,7 @@ class BuySellPointList(Generic[LINE_TYPE, LINE_LIST_TYPE]):
         else:
             self.treat_pz_bsp1(seg, BSP_CONF, bi_list, is_target_bsp)  # 盘整一类买卖点
 
-    def treat_bsp1(self, seg: Seg[LINE_TYPE], BSP_CONF: CPointConfig, is_target_bsp: bool):
+    def treat_bsp1(self, seg: Seg[LINE_TYPE], BSP_CONF: PointConfig, is_target_bsp: bool):
         last_zs = seg.zs_lst[-1]
         assert last_zs.bi_out is not None
         break_peak, _ = last_zs.out_bi_is_peak()  # break_peak=False应该只有线段第一笔直接拉得很低的时候才会有这个情况
@@ -117,7 +117,7 @@ class BuySellPointList(Generic[LINE_TYPE, LINE_LIST_TYPE]):
             is_target_bsp = False
         self.add_bs(bs_type=BSP_TYPE.T1, bi=last_zs.bi_out, relate_bsp1=None, is_target_bsp=is_target_bsp)
 
-    def treat_pz_bsp1(self, seg: Seg[LINE_TYPE], BSP_CONF: CPointConfig, bi_list: LINE_LIST_TYPE, is_target_bsp):
+    def treat_pz_bsp1(self, seg: Seg[LINE_TYPE], BSP_CONF: PointConfig, bi_list: LINE_LIST_TYPE, is_target_bsp):
         last_bi = seg.end_bi
         pre_bi = bi_list[last_bi.idx-2]
         if last_bi.seg_idx != pre_bi.seg_idx:
@@ -137,12 +137,12 @@ class BuySellPointList(Generic[LINE_TYPE, LINE_LIST_TYPE]):
             assert isinstance(last_bi, Bi) and isinstance(pre_bi, Bi)
         self.add_bs(bs_type=BSP_TYPE.T1P, bi=last_bi, relate_bsp1=None, is_target_bsp=is_target_bsp)
 
-    def cal_seg_bs2point(self, seg_list: CSegListComm[LINE_TYPE], bi_list: LINE_LIST_TYPE):
+    def cal_seg_bs2point(self, seg_list: SegListComm[LINE_TYPE], bi_list: LINE_LIST_TYPE):
         bsp1_bi_idx_dict = {bsp.bi.idx: bsp for bsp in self.bsp1_lst}
         for seg in seg_list:
             self.treat_bsp2(seg, bsp1_bi_idx_dict, seg_list, bi_list)
 
-    def treat_bsp2(self, seg: Seg, bsp1_bi_idx_dict, seg_list: CSegListComm[LINE_TYPE], bi_list: LINE_LIST_TYPE):
+    def treat_bsp2(self, seg: Seg, bsp1_bi_idx_dict, seg_list: SegListComm[LINE_TYPE], bi_list: LINE_LIST_TYPE):
         if not self.seg_need_cal(seg):
             return
         if len(seg_list) > 1:
@@ -175,12 +175,12 @@ class BuySellPointList(Generic[LINE_TYPE, LINE_LIST_TYPE]):
 
     def treat_bsp2s(
         self,
-        seg_list: CSegListComm,
+        seg_list: SegListComm,
         bi_list: LINE_LIST_TYPE,
         bsp2_bi: LINE_TYPE,
         break_bi: LINE_TYPE,
         real_bsp1: Optional[BuySel_Point],
-        BSP_CONF: CPointConfig,
+        BSP_CONF: PointConfig,
     ):
         bias = 2
         _low, _high = None, None
@@ -208,7 +208,7 @@ class BuySellPointList(Generic[LINE_TYPE, LINE_LIST_TYPE]):
             self.add_bs(bs_type=BSP_TYPE.T2S, bi=bsp2s_bi, relate_bsp1=real_bsp1)  # type: ignore
             bias += 2
 
-    def cal_seg_bs3point(self, seg_list: CSegListComm[LINE_TYPE], bi_list: LINE_LIST_TYPE):
+    def cal_seg_bs3point(self, seg_list: SegListComm[LINE_TYPE], bi_list: LINE_LIST_TYPE):
         bsp1_bi_idx_dict = {bsp.bi.idx: bsp for bsp in self.bsp1_lst}
         for seg in seg_list:
             if not self.seg_need_cal(seg):
@@ -235,9 +235,9 @@ class BuySellPointList(Generic[LINE_TYPE, LINE_LIST_TYPE]):
 
     def treat_bsp3_after(
         self,
-        seg_list: CSegListComm[LINE_TYPE],
+        seg_list: SegListComm[LINE_TYPE],
         next_seg: Seg[LINE_TYPE],
-        BSP_CONF: CPointConfig,
+        BSP_CONF: PointConfig,
         bi_list: LINE_LIST_TYPE,
         real_bsp1,
         bsp1_bi_idx,
@@ -262,11 +262,11 @@ class BuySellPointList(Generic[LINE_TYPE, LINE_LIST_TYPE]):
 
     def treat_bsp3_before(
         self,
-        seg_list: CSegListComm[LINE_TYPE],
+        seg_list: SegListComm[LINE_TYPE],
         seg: Seg[LINE_TYPE],
         next_seg: Optional[Seg[LINE_TYPE]],
         bsp1_bi: Optional[LINE_TYPE],
-        BSP_CONF: CPointConfig,
+        BSP_CONF: PointConfig,
         bi_list: LINE_LIST_TYPE,
         real_bsp1,
         next_seg_idx

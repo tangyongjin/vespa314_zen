@@ -4,16 +4,16 @@ from typing import Generic, List, TypeVar, Union, overload
 from Bi.Bi import Bi
 from Bi.BiList import BiList
 from Common.CEnum import BI_DIR, LEFT_SEG_METHOD, SEG_TYPE
-from Common.ChanException import CChanException, ErrCode
+from Common.ChanException import ChanException, ErrCode
 
 from .Seg import Seg
-from .SegConfig import CSegConfig
+from .SegConfig import SegConfig
 
 SUB_LINE_TYPE = TypeVar('SUB_LINE_TYPE', Bi, "Seg")
 
 
-class CSegListComm(Generic[SUB_LINE_TYPE]):
-    def __init__(self, seg_config=CSegConfig(), lv=SEG_TYPE.BI):
+class SegListComm(Generic[SUB_LINE_TYPE]):
+    def __init__(self, seg_config=SegConfig(), lv=SEG_TYPE.BI):
         self.lst: List[Seg[SUB_LINE_TYPE]] = []
         self.lv = lv
         self.do_init()
@@ -68,7 +68,7 @@ class CSegListComm(Generic[SUB_LINE_TYPE]):
             _dir = BI_DIR.UP if bi_lst[-1].get_end_val() >= bi_lst[0].get_begin_val() else BI_DIR.DOWN
             self.add_new_seg(bi_lst, bi_lst[-1].idx, is_sure=False, seg_dir=_dir, split_first_seg=False, reason="0seg_collect_all")
         else:
-            raise CChanException(f"unknown seg left_method = {self.config.left_method}", ErrCode.PARA_ERROR)
+            raise ChanException(f"unknown seg left_method = {self.config.left_method}", ErrCode.PARA_ERROR)
 
     def collect_left_seg_peak_method(self, last_seg_end_bi, bi_lst):
         if last_seg_end_bi.is_down():
@@ -102,7 +102,7 @@ class CSegListComm(Generic[SUB_LINE_TYPE]):
         elif self.config.left_method == LEFT_SEG_METHOD.PEAK:
             self.collect_left_seg_peak_method(last_seg_end_bi, bi_lst)
         else:
-            raise CChanException(f"unknown seg left_method = {self.config.left_method}", ErrCode.PARA_ERROR)
+            raise ChanException(f"unknown seg left_method = {self.config.left_method}", ErrCode.PARA_ERROR)
 
     def collect_left_seg(self, bi_lst: BiList):
         if len(self) == 0:
@@ -141,7 +141,7 @@ class CSegListComm(Generic[SUB_LINE_TYPE]):
     def add_new_seg(self, bi_lst: BiList, end_bi_idx: int, is_sure=True, seg_dir=None, split_first_seg=True, reason="normal"):
         try:
             self.try_add_new_seg(bi_lst, end_bi_idx, is_sure, seg_dir, split_first_seg, reason)
-        except CChanException as e:
+        except ChanException as e:
             if e.errcode == ErrCode.SEG_END_VALUE_ERR and len(self.lst) == 0:
                 return False
             raise e

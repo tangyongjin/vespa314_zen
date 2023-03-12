@@ -6,14 +6,14 @@ from Common.func_util import _parse_inf
 
 class CBSPointConfig:
     def __init__(self, **args):
-        self.b_conf = CPointConfig(**args)
-        self.s_conf = CPointConfig(**args)
+        self.b_conf = PointConfig(**args)
+        self.s_conf = PointConfig(**args)
 
     def GetBSConfig(self, is_buy):
         return self.b_conf if is_buy else self.s_conf
 
 
-class CPointConfig:
+class PointConfig:
     def __init__(self,
                  divergence_rate,
                  min_zs_cnt,

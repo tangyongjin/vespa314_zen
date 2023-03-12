@@ -1,5 +1,5 @@
 from Common.CEnum import FX_CHECK_METHOD
-from Common.ChanException import CChanException, ErrCode
+from Common.ChanException import ChanException, ErrCode
 
 
 class BiConfig:
@@ -20,7 +20,7 @@ class BiConfig:
         elif bi_fx_check == "half":
             self.bi_fx_check = FX_CHECK_METHOD.HALF
         else:
-            raise CChanException(f"unknown bi_fx_check={bi_fx_check}", ErrCode.PARA_ERROR)
+            raise ChanException(f"unknown bi_fx_check={bi_fx_check}", ErrCode.PARA_ERROR)
 
         self.gap_as_kl = gap_as_kl
         self.bi_end_is_peak = bi_end_is_peak

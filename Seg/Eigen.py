@@ -3,13 +3,13 @@ from Combiner.KLine_Combiner import KLine_Combiner
 from Common.CEnum import BI_DIR, FX_TYPE
 
 
-class CEigen(KLine_Combiner[Bi]):
+class Eigen(KLine_Combiner[Bi]):
     def __init__(self, bi, _dir):
-        super(CEigen, self).__init__(bi, _dir)
+        super(Eigen, self).__init__(bi, _dir)
         self.gap = False
 
-    def update_fx(self, _pre: 'CEigen', _next: 'CEigen', exclude_included=False, allow_top_equal=None):
-        super(CEigen, self).update_fx(_pre, _next, exclude_included, allow_top_equal)
+    def update_fx(self, _pre: 'Eigen', _next: 'Eigen', exclude_included=False, allow_top_equal=None):
+        super(Eigen, self).update_fx(_pre, _next, exclude_included, allow_top_equal)
         if (self.fx == FX_TYPE.TOP and _pre.high < self.low) or \
            (self.fx == FX_TYPE.BOTTOM and _pre.low > self.high):
             self.gap = True

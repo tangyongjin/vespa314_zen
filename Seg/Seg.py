@@ -2,10 +2,10 @@ from typing import Generic, List, Optional, Self, TypeVar
 
 from Bi.Bi import Bi
 from Common.CEnum import BI_DIR, MACD_ALGO
-from Common.ChanException import CChanException, ErrCode
+from Common.ChanException import ChanException, ErrCode
 from KLine.KLineOrginal import KLineOrginal
 
-from .EigenFX import CEigenFX
+from .EigenFX import EigenFX
 
 LINE_TYPE = TypeVar('LINE_TYPE', Bi, "Seg")
 
@@ -22,7 +22,7 @@ class Seg(Generic[LINE_TYPE]):
         from ZS.ZS import ZS
         self.zs_lst: List[ZS[LINE_TYPE]] = []
 
-        self.eigen_fx: Optional[CEigenFX] = None
+        self.eigen_fx: Optional[EigenFX] = None
         self.seg_idx = None  # 线段的线段用
         self.parent_seg: Optional[Seg] = None  # 在哪个线段里面
         self.pre: Optional[Self] = None
@@ -45,11 +45,11 @@ class Seg(Generic[LINE_TYPE]):
             return
         if self.is_down():
             if self.start_bi.get_begin_val() < self.end_bi.get_end_val():
-                raise CChanException(f"下降线段起始点应该高于结束点! idx={self.idx}", ErrCode.SEG_END_VALUE_ERR)
+                raise ChanException(f"下降线段起始点应该高于结束点! idx={self.idx}", ErrCode.SEG_END_VALUE_ERR)
         elif self.start_bi.get_begin_val() > self.end_bi.get_end_val():
-            raise CChanException(f"上升线段起始点应该低于结束点! idx={self.idx}", ErrCode.SEG_END_VALUE_ERR)
+            raise ChanException(f"上升线段起始点应该低于结束点! idx={self.idx}", ErrCode.SEG_END_VALUE_ERR)
         if self.end_bi.idx - self.start_bi.idx < 2:
-            raise CChanException(f"线段({self.start_bi.idx}-{self.end_bi.idx})长度不能小于2! idx={self.idx}", ErrCode.SEG_LEN_ERR)
+            raise ChanException(f"线段({self.start_bi.idx}-{self.end_bi.idx})长度不能小于2! idx={self.idx}", ErrCode.SEG_LEN_ERR)
 
     def __str__(self):
         return f"{self.start_bi.idx}->{self.end_bi.idx}: {self.dir}  {self.is_sure}"
@@ -106,7 +106,7 @@ class Seg(Generic[LINE_TYPE]):
         elif macd_algo == MACD_ALGO.AMP:
             return self.Cal_MACD_amp()
         else:
-            raise CChanException(f"unsupport macd_algo={macd_algo} of Seg, should be one of slope/amp", ErrCode.PARA_ERROR)
+            raise ChanException(f"unsupport macd_algo={macd_algo} of Seg, should be one of slope/amp", ErrCode.PARA_ERROR)
 
     def Cal_MACD_slope(self):
         begin_klu = self.get_begin_klu()

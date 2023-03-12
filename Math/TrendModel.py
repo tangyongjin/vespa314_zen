@@ -1,8 +1,8 @@
 from Common.CEnum import TREND_TYPE
-from Common.ChanException import CChanException, ErrCode
+from Common.ChanException import ChanException, ErrCode
 
 
-class CTrendModel:
+class TrendModel:
     def __init__(self, trend_type: TREND_TYPE, T: int):
         self.T = T
         self.arr = []
@@ -19,4 +19,4 @@ class CTrendModel:
         elif self.type == TREND_TYPE.MIN:
             return min(self.arr)
         else:
-            raise CChanException(f"Unknown trendModel Type = {self.type}", ErrCode.PARA_ERROR)
+            raise ChanException(f"Unknown trendModel Type = {self.type}", ErrCode.PARA_ERROR)

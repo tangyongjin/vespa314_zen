@@ -3,31 +3,31 @@ from typing import List, Optional
 from Bi.Bi import Bi
 from Bi.BiList import BiList
 from Common.CEnum import BI_DIR, FX_TYPE, KLINE_DIR, SEG_TYPE
-from Common.ChanException import CChanException, ErrCode
+from Common.ChanException import ChanException, ErrCode
 from Common.func_util import revert_bi_dir
 
-from .Eigen import CEigen
+from .Eigen import Eigen
 
 
-class CEigenFX:
+class EigenFX:
     def __init__(self, _dir: BI_DIR, exclude_included=True, lv=SEG_TYPE.BI):
         self.lv = lv
         self.dir = _dir  # 线段方向
-        self.ele: List[Optional[CEigen]] = [None, None, None]
+        self.ele: List[Optional[Eigen]] = [None, None, None]
         self.lst: List[Bi] = []
         self.exclude_included = exclude_included
         self.kl_dir = KLINE_DIR.UP if _dir == BI_DIR.UP else KLINE_DIR.DOWN
         self.last_evidence_bi: Optional[Bi] = None
 
     def treat_first_ele(self, bi: Bi) -> bool:
-        self.ele[0] = CEigen(bi, self.kl_dir)
+        self.ele[0] = Eigen(bi, self.kl_dir)
         return False
 
     def treat_second_ele(self, bi: Bi) -> bool:
         assert self.ele[0] is not None
         combine_dir = self.ele[0].try_add(bi, exclude_included=self.exclude_included)
         if combine_dir != KLINE_DIR.COMBINE:  # 不能合并
-            self.ele[1] = CEigen(bi, self.kl_dir)
+            self.ele[1] = Eigen(bi, self.kl_dir)
             if (self.is_up() and self.ele[1].high < self.ele[0].high) or \
                (self.is_down() and self.ele[1].low > self.ele[0].low):  # 前两元素不可能成为分形
                 return self.reset()
@@ -41,7 +41,7 @@ class CEigenFX:
         combine_dir = self.ele[1].try_add(bi, allow_top_equal=allow_top_equal)
         if combine_dir == KLINE_DIR.COMBINE:
             return False
-        self.ele[2] = CEigen(bi, combine_dir)
+        self.ele[2] = Eigen(bi, combine_dir)
         if not self.actual_break():
             return self.reset()
         self.ele[1].update_fx(self.ele[0], self.ele[2], exclude_included=self.exclude_included, allow_top_equal=allow_top_equal)  # type: ignore
@@ -59,7 +59,7 @@ class CEigenFX:
         elif self.ele[2] is None:  # 第三元素
             return self.treat_third_ele(bi)
         else:
-            raise CChanException(f"特征序列3个都找齐了还没处理!! 当前笔:{bi.idx},当前:{str(self)}", ErrCode.SEG_EIGEN_ERR)
+            raise ChanException(f"特征序列3个都找齐了还没处理!! 当前笔:{bi.idx},当前:{str(self)}", ErrCode.SEG_EIGEN_ERR)
 
     def reset(self):
         bi_tmp_list = list(self.lst[1:])
@@ -131,7 +131,7 @@ class CEigenFX:
         COMMON_COMBINE = True  # 是否用普通分形合并规则处理
         # 如果返回None，表示找到最后了
         first_bi_dir = bi_list[begin_idx].dir  # down则是要找顶分型
-        egien_fx = CEigenFX(revert_bi_dir(first_bi_dir), exclude_included=not COMMON_COMBINE, lv=self.lv)  # 顶分型的话要找上升线段
+        egien_fx = EigenFX(revert_bi_dir(first_bi_dir), exclude_included=not COMMON_COMBINE, lv=self.lv)  # 顶分型的话要找上升线段
         for bi in bi_list[begin_idx::2]:
             if egien_fx.add(bi):
                 if COMMON_COMBINE:

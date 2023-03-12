@@ -4,14 +4,14 @@ from Bi.Bi import Bi
 from Bi.BiList import BiList
 from Common.func_util import revert_bi_dir
 from Seg.Seg import Seg
-from Seg.SegListComm import CSegListComm
-from ZS.ZSConfig import CZSConfig
+from Seg.SegListComm import SegListComm
+from ZS.ZSConfig import ZSConfig
 
 from .ZS import ZS
 
 
-class CZSList:
-    def __init__(self, zs_config=CZSConfig()):
+class ZSList:
+    def __init__(self, zs_config=ZSConfig()):
         self.zs_lst: List[ZS] = []
 
         self.config = zs_config
@@ -20,7 +20,7 @@ class CZSList:
         self.FORCE_CAL_ALL = False  # 控制是否强制计算所有的点，理论上开不开结果一样，效率相差比较多，debug时打开
         self.last_sure_pos = -1  # 上一次计算时sure seg【起始】klu的位置，用起始原因是因为这一次计算可能最后一个线段是刚刚生成的
 
-    def update_last_pos(self, seg_list: CSegListComm):
+    def update_last_pos(self, seg_list: SegListComm):
         self.last_sure_pos = -1
         if self.FORCE_CAL_ALL:
             return
@@ -77,7 +77,7 @@ class CZSList:
         max_low = max(item._low() for item in lst)
         return ZS(lst, is_sure=is_sure) if min_high > max_low else None
 
-    def cal_bi_zs(self, bi_lst: Union[BiList, CSegListComm], seg_lst: CSegListComm):
+    def cal_bi_zs(self, bi_lst: Union[BiList, SegListComm], seg_lst: SegListComm):
         self.zs_lst = [zs for zs in self.zs_lst if zs.end.idx is not None and zs.end.idx <= self.last_sure_pos]
 
         for seg in seg_lst:

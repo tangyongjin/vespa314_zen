@@ -7,7 +7,7 @@ from matplotlib.patches import Rectangle
 from Tools.DebugTool import cprint
 from Chan import CChan
 from Common.CEnum import BI_DIR, FX_TYPE, KL_TYPE, KLINE_DIR, TREND_TYPE
-from Common.ChanException import CChanException, ErrCode
+from Common.ChanException import ChanException, ErrCode
 from .PlotMeta import Bi_meta, ZenPlotMeta, ZS_meta
 from colorama import Fore, Back, Style
 
@@ -207,7 +207,7 @@ class CPlotDriver:
                 _y.append(kl.low)
                 _x.append(i)
             else:
-                raise CChanException(f"unknow plot mode={plot_mode}, must be one of kl/close/open/high/low", ErrCode.PLOT_ERR)
+                raise ChanException(f"unknow plot mode={plot_mode}, must be one of kl/close/open/high/low", ErrCode.PLOT_ERR)
         
         
         cprint("API结果**********************",Fore.RED)
@@ -467,7 +467,7 @@ class CPlotDriver:
         if T is None:
             T = config_T_lst[-1]
         elif T not in max_lst[0]:
-            raise CChanException(f"plot channel of T={T} is not setted in CChanConfig.trend_metrics = {config_T_lst}", ErrCode.PLOT_ERR)
+            raise ChanException(f"plot channel of T={T} is not setted in CChanConfig.trend_metrics = {config_T_lst}", ErrCode.PLOT_ERR)
         top_array = [_d[T] for _d in max_lst]
         bottom_array = [_d[T] for _d in min_lst]
         ax.plot(range(len(top_array)), top_array, c=top_color, linewidth=linewidth, linestyle=linestyle, label=f'{T}-TOP-channel')
@@ -481,7 +481,7 @@ class CPlotDriver:
             up = [klu.boll.UP for klu in zenPltMeta.klu_iter()][x_begin:]
             down = [klu.boll.DOWN for klu in zenPltMeta.klu_iter()][x_begin:]
         except AttributeError as e:
-            raise CChanException("you can't draw boll until you set boll_n in CChanConfig", ErrCode.PLOT_ERR) from e
+            raise ChanException("you can't draw boll until you set boll_n in CChanConfig", ErrCode.PLOT_ERR) from e
 
         ax.plot(range(x_begin, x_begin+len(ma)), ma, c=mid_color)
         ax.plot(range(x_begin, x_begin+len(up)), up, c=up_color)
@@ -647,7 +647,7 @@ def parse_single_lv_plot_config(plot_config: Union[str, dict, list]) -> Dict[str
     elif isinstance(plot_config, list):
         return reformat_plot_config(dict([(k.strip().lower(), True) for k in plot_config]))
     else:
-        raise CChanException("plot_config only support list/str/dict", ErrCode.PLOT_ERR)
+        raise ChanException("plot_config only support list/str/dict", ErrCode.PLOT_ERR)
 
 
 def parse_plot_config(plot_config: Union[str, dict, list], lv_list: List[KL_TYPE]) -> Dict[KL_TYPE, Dict[str, bool]]:
@@ -668,7 +668,7 @@ def parse_plot_config(plot_config: Union[str, dict, list], lv_list: List[KL_TYPE
                 assert lv in plot_config
             return {lv: parse_single_lv_plot_config(plot_config[lv]) for lv in lv_list}
         else:
-            raise CChanException("plot_config if is dict, key must be str/KL_TYPE", ErrCode.PLOT_ERR)
+            raise ChanException("plot_config if is dict, key must be str/KL_TYPE", ErrCode.PLOT_ERR)
     return {lv: parse_single_lv_plot_config(plot_config) for lv in lv_list}
 
 
@@ -762,7 +762,7 @@ def set_grid(ax, config):
     if config in ("x", "y"):
         ax.grid(True, axis=config)
         return
-    raise CChanException(f"unsupport grid config={config}", ErrCode.PLOT_ERR)
+    raise ChanException(f"unsupport grid config={config}", ErrCode.PLOT_ERR)
 
 
 def GetPlotMeta(chan: CChan, figure_config) -> List[ZenPlotMeta]:

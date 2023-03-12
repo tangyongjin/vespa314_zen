@@ -1,7 +1,7 @@
 from typing import List, Optional
 from Common.cache import make_cache
 from Common.CEnum import BI_DIR, BI_TYPE, DATA_FIELD, FX_TYPE, MACD_ALGO
-from Common.ChanException import CChanException, ErrCode
+from Common.ChanException import ChanException, ErrCode
 from KLine.KLine import KLineCombined
 from KLine.KLineOrginal import KLineOrginal
 
@@ -74,7 +74,7 @@ class Bi:
             else:
                 assert self.begin_klc.low < self.end_klc.high
         except Exception as e:
-            raise CChanException(f"{self.idx}:{self.begin_klc[0].time}~{self.end_klc[-1].time}笔的方向和收尾位置不一致!", ErrCode.BI_ERR) from e
+            raise ChanException(f"{self.idx}:{self.begin_klc[0].time}~{self.end_klc[-1].time}笔的方向和收尾位置不一致!", ErrCode.BI_ERR) from e
 
     def set(self, bigin_klc: KLineCombined, end_klc: KLineCombined):
         self.__begin_klc: KLineCombined = bigin_klc
@@ -84,7 +84,7 @@ class Bi:
         elif bigin_klc.fx == FX_TYPE.TOP:
             self.__dir = BI_DIR.DOWN
         else:
-            raise CChanException("ERROR DIRECTION when creating bi", ErrCode.BI_ERR)
+            raise ChanException("ERROR DIRECTION when creating bi", ErrCode.BI_ERR)
         self.check()
         self.clean_cache()
 
@@ -189,7 +189,7 @@ class Bi:
         elif macd_algo == MACD_ALGO.TURNRATE_AVG:
             return self.Cal_MACD_trade_metric(DATA_FIELD.FIELD_TURNRATE, cal_avg=True)
         else:
-            raise CChanException(f"unsupport macd_algo={macd_algo}, should be one of area/full_area/peak/diff/slope/amp", ErrCode.PARA_ERROR)
+            raise ChanException(f"unsupport macd_algo={macd_algo}, should be one of area/full_area/peak/diff/slope/amp", ErrCode.PARA_ERROR)
 
     @make_cache
     def Cal_MACD_area(self):

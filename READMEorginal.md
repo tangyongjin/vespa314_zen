@@ -1045,18 +1045,18 @@ def priceQuery(codelist: List[str], engine: str, return_klu: bool = False):
 ### 线段模型
 线段的计算坊间也有多种不同的计算方法，框架提供基于特征序列，基于笔破坏，都业华课程中所谓的 1+1 终结等几个实现；
 
-如需实现自己的算法，实现一个类，继承自 `CSegListComm`，实现一个函数 `update(self, bi_list: BiList)` 即可，bi_list 包含了所有已知笔的信息；
+如需实现自己的算法，实现一个类，继承自 `SegListComm`，实现一个函数 `update(self, bi_list: BiList)` 即可，bi_list 包含了所有已知笔的信息；
 
-其中 `CSegListComm` 有两个属性：
-- `CSegListComm.lst: List[Seg]` 存储所有计算出来的线段，必须按顺序存储；
-- `CSegListComm.config: CSegConfig` 线段配置类，如果需要传入自己实现的配置参数，可通过这个类实现
+其中 `SegListComm` 有两个属性：
+- `SegListComm.lst: List[Seg]` 存储所有计算出来的线段，必须按顺序存储；
+- `SegListComm.config: SegConfig` 线段配置类，如果需要传入自己实现的配置参数，可通过这个类实现
 
-> 必须要说明一下的是，`CSegListComm` 提供了大量对还没确定K线计算虚线段的通用处理函数，这不仅是整个项目里面逻辑最复杂最难的部分，也是代码最难以维护的部分。。之前这个文件代码撸了好几天，里面加了大量的检测断言，验收标准是对全量 A 股港股美股 20000+股票计算不出错，当前已经完全不敢改这个文件了，但是由于已经例行运行了差不多 7 个月没出过任何错了，所以，应该问题不大。。
+> 必须要说明一下的是，`SegListComm` 提供了大量对还没确定K线计算虚线段的通用处理函数，这不仅是整个项目里面逻辑最复杂最难的部分，也是代码最难以维护的部分。。之前这个文件代码撸了好几天，里面加了大量的检测断言，验收标准是对全量 A 股港股美股 20000+股票计算不出错，当前已经完全不敢改这个文件了，但是由于已经例行运行了差不多 7 个月没出过任何错了，所以，应该问题不大。。
 
 ### bsp 买卖点
 形态学买卖点如果需要开发自己设计的买卖点，可以参考 `BuySellPoint/BuySellPointList.py` 开发一个类，对外暴露以下方法：
 ```python
-def cal(self, bi_list: BiList, seg_list: CSegListComm) -> None:
+def cal(self, bi_list: BiList, seg_list: SegListComm) -> None:
     ...
 ```
 
@@ -1087,7 +1087,7 @@ class CCustomStragety(CStragety):
         ...
 
     @abc.abstractmethod
-    def bsp_signal(self, data: CKLine_List) -> List[CSignal]:
+    def bsp_signal(self, data: KLineCombineList) -> List[CSignal]:
         ...
 ```
 
@@ -1107,7 +1107,7 @@ def try_open(self, chan: CChan, lv) -> Optional[CCustomBSP]:
         if qjt_bsp := self.cal_qjt_bsp(data, chan[lv + 1]):  # 计算区间套
             return qjt_bsp
 
-def cal_qjt_bsp(self, data: CKLine_List, sub_lv_data: CKLine_List) -> Optional[CCustomBSP]:
+def cal_qjt_bsp(self, data: KLineCombineList, sub_lv_data: KLineCombineList) -> Optional[CCustomBSP]:
     last_klu = data[-1][-1]
     last_bsp_lst = data.bs_point_lst.getLastestBspList()
     if len(last_bsp_lst) == 0:
