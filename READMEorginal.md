@@ -417,7 +417,7 @@ from Common.CEnum import AUTYPE, KL_TYPE
 from Config.EnvConfig import Env
 from CustomBuySellPoint.CustomStragety import CCustomStragety
 from Plot.AnimatePlotDriver import AnimateDriver
-from Plot.PlotDriver import CPlotDriver
+from Plot.PlotDriver import PlotDriver
 
 config = ZenConfig({})  # 缠论计算配置，见后文
 
@@ -464,7 +464,7 @@ plot_para = {
 }  # 空格绘图元素详细配置，详见后文
 
 if not config.triger_step:  # 绘制静态图
-    plot_driver = CPlotDriver(
+    plot_driver = PlotDriver(
         chan,
         plot_config=plot_config,
         plot_para=plot_para,
@@ -479,7 +479,7 @@ else:  # 绘制动画
 
 需要计算缠论相关数据，仅需 CChan 调用那一行；
 如果需要画图:
-- 单幅图使用 `CPlotDriver`
+- 单幅图使用 `PlotDriver`
 - 如果需要看回放动画，则使用 `AnimateDriver`
 
 <img src="./Image/chan.py_image_5.png" />
@@ -661,7 +661,7 @@ config = ZenConfig({
 
 ### 画图配置
 #### plot_config
-CPlotDriver 和 AnimateDriver 参数，用于控制绘制哪些元素
+PlotDriver 和 AnimateDriver 参数，用于控制绘制哪些元素
 
 - plot_kline：画K线，默认为 False
 - plot_kline_combine：画合并K线，默认为 False
@@ -1310,7 +1310,7 @@ class CCommModel:
 ### COS
 交易引擎在开仓时会推送股票，止损点，价格，分数之类的信息；为了方便在推送时附带上缠论绘制的图片，所以需要一个可以上传图片的地方，所以本项目实现了两个基于cos的上传接口，即项目中`Plot/CosApi`下的实现；
 
-首选需要在`config.yaml`中配置上COS相关的信息（设计账号密码，桶名称之类的），自己开发使用时，可以直接调用`CPlotDriver.Upload2COS(path=None)`实现自动上传并获得url；
+首选需要在`config.yaml`中配置上COS相关的信息（设计账号密码，桶名称之类的），自己开发使用时，可以直接调用`PlotDriver.Upload2COS(path=None)`实现自动上传并获得url；
 
 ```python
 chan = CChan(
@@ -1324,7 +1324,7 @@ chan = CChan(
         extra_kl=None,
     )
 
-plot_driver = CPlotDriver(
+plot_driver = PlotDriver(
     chan,
     plot_config=plot_config,
     plot_para=plot_para,

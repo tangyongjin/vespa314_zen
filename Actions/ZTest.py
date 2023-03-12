@@ -3,7 +3,7 @@ from ZenMaster import ZenMaster
 from ZenConfig import ZenConfig
 from Common.CEnum import AUTYPE, DATA_SRC, KL_TYPE
 from Plot.AnimatePlotDriver import AnimateDriver
-from Plot.PlotDriver import CPlotDriver
+from Plot.PlotDriver import PlotDriver
 from Tools.DebugTool import cprint
 from colorama import Fore, Back, Style
 
@@ -80,7 +80,7 @@ async def ZTest():
                 # "x_range": 50,
             },
         }
-        chan = CChan(
+        chan = ZenMaster(
             code=code,
             begin_time=begin_time,
             end_time=end_time,
@@ -92,7 +92,7 @@ async def ZTest():
 
         if not config.triger_step:
             
-            plot_driver = CPlotDriver(
+            plot_driver = PlotDriver(
                 chan,
                 plot_config=plot_config,
                 plot_para=plot_para,

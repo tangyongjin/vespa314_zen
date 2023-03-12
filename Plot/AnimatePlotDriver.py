@@ -3,7 +3,7 @@ from IPython.display import clear_output, display
 
 from ZenMaster import ZenMaster
 
-from .PlotDriver import CPlotDriver
+from .PlotDriver import PlotDriver
 
 
 class AnimateDriver:
@@ -13,7 +13,7 @@ class AnimateDriver:
         if plot_para is None:
             plot_para = {}
         for _ in chan.step_load():
-            g = CPlotDriver(chan, plot_config, plot_para)
+            g = PlotDriver(chan, plot_config, plot_para)
             clear_output(wait=True)
             display(g.figure)
             plt.close(g.figure)

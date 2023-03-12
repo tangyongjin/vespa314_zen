@@ -2,7 +2,7 @@ from ZenMaster import ZenMaster
 from ZenConfig import ZenConfig
 from Common.CEnum import AUTYPE, DATA_SRC, KL_TYPE
 from Plot.AnimatePlotDriver import AnimateDriver
-from Plot.PlotDriver import CPlotDriver
+from Plot.PlotDriver import PlotDriver
 
 if __name__ == "__main__":
     code = "sz.000001"
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     )
 
     if not config.triger_step:
-        plot_driver = CPlotDriver(
+        plot_driver = PlotDriver(
             chan,
             plot_config=plot_config,
             plot_para=plot_para,

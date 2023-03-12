@@ -13,7 +13,7 @@ from colorama import Fore, Back, Style
 
 
 
-class CPlotDriver:
+class PlotDriver:
     def __init__(self, chan: ZenMaster, plot_config: Union[str, dict, list] = '', plot_para=None):
         # cprint("PlotDriver.py:156, init-->plot_para")
         # print(plot_para)
