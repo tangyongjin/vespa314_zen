@@ -44,7 +44,7 @@ class ZenPlotMeta:
         # 走势/中枢?
         # _tmpZsLst= [ZS_meta(zs) for zs in kl_list.zs_list]
         self.zs_lst: List[ZS_meta] =  [ZS_meta(zs) for zs in kl_list.zs_list]
-        cprint("走势/中枢***************",Fore.RED)
+        # cprint("走势/中枢***************",Fore.RED)
         # print(  _tmpZsLst  )
        
         # fo echarts  
@@ -52,19 +52,37 @@ class ZenPlotMeta:
         
         self.segzs_lst: List[ZS_meta] = [ZS_meta(segzs) for segzs in kl_list.segzs_list]
         
-        self.bs_point_lst: List[CBS_Point_meta] = [CBS_Point_meta(bs_point, is_seg=False) for bs_point in kl_list.bs_point_lst]
-        self.seg_bsp_lst: List[CBS_Point_meta] = [CBS_Point_meta(seg_bsp, is_seg=True) for seg_bsp in kl_list.seg_bs_point_lst]
+        cprint("买卖点>>> **************",Fore.RED)
+        self.bs_point_lst: List[BS_Point_meta] = [BS_Point_meta(bs_point, is_seg=False) for bs_point in kl_list.bs_point_lst]
+        self.BuySellPoints=self.GET_BuySellPoints_echarts(self.bs_point_lst )
+        
+        self.seg_bsp_lst: List[BS_Point_meta] = [BS_Point_meta(seg_bsp, is_seg=True) for seg_bsp in kl_list.seg_bs_point_lst]
+
+
+    def GET_BuySellPoints_echarts(self, bs_point_lst):
+        
+        tmpBSPoints=[]
+        cprint("买卖点>>> **GET_BuySellPoints_echarts************",Fore.RED)
+        for xbsp in  bs_point_lst:
+            print(xbsp)
+            print(vars(xbsp))
+            _tag=  ( 'b' if  xbsp.is_buy else 's' )+ xbsp.type  
+            tmpBSPoints.append( { "is_buy": xbsp.is_buy, "tag":_tag,  "type": xbsp.type, "is_seg": xbsp.is_seg, "y": xbsp.y, "xKlineTime": xbsp.xKlineTime } )
+        return tmpBSPoints
+        
+ 
+
 
     def  GET_ZsArea_echarts(self, kl_list_zs_list):
          ZsAreas=[];
-         cprint("走势/中枢?", Fore.RED)
+        #  cprint("走势/中枢?", Fore.RED)
         #  print(self.zs_lst)
          # print every element in the list
          for xzs in kl_list_zs_list:
-            print( type(xzs.begin_kl  ) )
-            print( vars(xzs) )
-            print( xzs.begin_kl.time.__str__() )
-            print( xzs.end_kl.time.__str__())
+            # print( type(xzs.begin_kl  ) )
+            # print( vars(xzs) )
+            # print( xzs.begin_kl.time.__str__() )
+            # print( xzs.end_kl.time.__str__())
             tmp= { "is_sure": xzs.is_sure, "start": [xzs.begin_kl.time.__str__(), xzs.low], "end": [xzs.end_kl.time.__str__(), xzs.high] }             
             ZsAreas.append(tmp)
          return ZsAreas
@@ -286,7 +304,7 @@ class ZS_meta:
         
 
 
-class CBS_Point_meta:
+class BS_Point_meta:
     def __init__(self, bsp: CBS_Point, is_seg):
         self.is_buy = bsp.is_buy
         self.type = bsp.type2str()
@@ -294,7 +312,10 @@ class CBS_Point_meta:
 
         self.x = bsp.klu.idx
         self.y = bsp.klu.low if self.is_buy else bsp.klu.high
-
+        # self.Version='EchartsBS'
+        self.xKlineTime = bsp.klu.time.__str__()
+        
+        
     def desc(self):
         is_seg_flag = "※" if self.is_seg else ""
         return f'{is_seg_flag}b{self.type}' if self.is_buy else f'{is_seg_flag}s{self.type}'

@@ -64,7 +64,7 @@ async def ZTest():
             # "plot_macd": True,
             # "plot_mean": False,
             "plot_channel": False,
-            # "plot_bsp": True,
+            "plot_bsp": True,
             # "plot_bsp": False,
             "plot_extrainfo": True,
         }

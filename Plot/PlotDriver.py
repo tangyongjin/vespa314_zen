@@ -213,7 +213,11 @@ class CPlotDriver:
         
         cprint("API结果**********************",Fore.RED)
         # print( zenPltMeta.SegPoints)
-        self.echartsData={ "x":kluXdata,"y": kluYdata , "BiPoints":zenPltMeta.BiPoints  ,'SegPoints':zenPltMeta.SegPoints,"ZsAreas":zenPltMeta.ZsAreas}
+        self.echartsData={ "x":kluXdata,"y": kluYdata , 
+                           "BiPoints":zenPltMeta.BiPoints,
+                           'SegPoints':zenPltMeta.SegPoints,
+                           "ZsAreas":zenPltMeta.ZsAreas,
+                           "BuySellPoints":zenPltMeta.BuySellPoints}
         
         if _x:
             # 
@@ -304,8 +308,8 @@ class CPlotDriver:
     ):
         x_begin = ax.get_xlim()[0]
         
-        cprint("画线段>>>draw_seg")
-        print(zenPltMeta.seg_list)
+        # cprint("画线段>>>draw_seg")
+        # print(zenPltMeta.seg_list)
         
         # for seg_idx, seg_meta in enumerate(zenPltMeta.seg_list):
         #     # cprint( seg_meta)
@@ -517,6 +521,12 @@ class CPlotDriver:
                 self.y_max = bsp.y-arrow_len*arrow_dir
 
     def draw_bs_point(self, zenPltMeta: ZenPlotMeta, ax: Axes, buy_color='r', sell_color='g', fontsize=15, arrow_l=0.15, arrow_h=0.2, arrow_w=1):
+        
+        cprint("画买卖点 draw_bs_point**********************",Fore.RED)
+        print(zenPltMeta.bs_point_lst)
+        # for xbsp in zenPltMeta.bs_point_lst:
+        #     print(xbsp)
+        #     print(vars(xbsp))
         self.bsp_common_draw(
             bsp_list=zenPltMeta.bs_point_lst,
             ax=ax,
