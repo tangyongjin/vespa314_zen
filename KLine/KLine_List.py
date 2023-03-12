@@ -3,7 +3,7 @@ from typing import List, Union, overload
 from Bi.Bi import Bi
 from Bi.BiList import BiList
 from BuySellPoint.BuySellPointList import BuySellPointList
-from ChanConfig import CChanConfig
+from ZenConfig import ZenConfig
 from Common.CEnum import KLINE_DIR, SEG_TYPE
 from Common.ChanException import ChanException, ErrCode
 from Seg.Seg import Seg
@@ -23,7 +23,7 @@ def get_seglist_instance(seg_config: SegConfig, lv) -> SegListComm:
 
 
 class KLineCombineList:
-    def __init__(self, kl_type, conf: CChanConfig):
+    def __init__(self, kl_type, conf: ZenConfig):
         self.kl_type = kl_type
         self.config = conf
         self.lst: List[KLineCombined] = []  # K线列表，可递归  元素KLine类型

@@ -5,7 +5,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.patches import Rectangle
 from Tools.DebugTool import cprint
-from Chan import CChan
+from ZenMaster import ZenMaster
 from Common.CEnum import BI_DIR, FX_TYPE, KL_TYPE, KLINE_DIR, TREND_TYPE
 from Common.ChanException import ChanException, ErrCode
 from .PlotMeta import Bi_meta, ZenPlotMeta, ZS_meta
@@ -14,7 +14,7 @@ from colorama import Fore, Back, Style
 
 
 class CPlotDriver:
-    def __init__(self, chan: CChan, plot_config: Union[str, dict, list] = '', plot_para=None):
+    def __init__(self, chan: ZenMaster, plot_config: Union[str, dict, list] = '', plot_para=None):
         # cprint("PlotDriver.py:156, init-->plot_para")
         # print(plot_para)
         if plot_para is None:
@@ -467,7 +467,7 @@ class CPlotDriver:
         if T is None:
             T = config_T_lst[-1]
         elif T not in max_lst[0]:
-            raise ChanException(f"plot channel of T={T} is not setted in CChanConfig.trend_metrics = {config_T_lst}", ErrCode.PLOT_ERR)
+            raise ChanException(f"plot channel of T={T} is not setted in ZenConfig.trend_metrics = {config_T_lst}", ErrCode.PLOT_ERR)
         top_array = [_d[T] for _d in max_lst]
         bottom_array = [_d[T] for _d in min_lst]
         ax.plot(range(len(top_array)), top_array, c=top_color, linewidth=linewidth, linestyle=linestyle, label=f'{T}-TOP-channel')
@@ -481,7 +481,7 @@ class CPlotDriver:
             up = [klu.boll.UP for klu in zenPltMeta.klu_iter()][x_begin:]
             down = [klu.boll.DOWN for klu in zenPltMeta.klu_iter()][x_begin:]
         except AttributeError as e:
-            raise ChanException("you can't draw boll until you set boll_n in CChanConfig", ErrCode.PLOT_ERR) from e
+            raise ChanException("you can't draw boll until you set boll_n in ZenConfig", ErrCode.PLOT_ERR) from e
 
         ax.plot(range(x_begin, x_begin+len(ma)), ma, c=mid_color)
         ax.plot(range(x_begin, x_begin+len(up)), up, c=up_color)
@@ -765,7 +765,7 @@ def set_grid(ax, config):
     raise ChanException(f"unsupport grid config={config}", ErrCode.PLOT_ERR)
 
 
-def GetPlotMeta(chan: CChan, figure_config) -> List[ZenPlotMeta]:
+def GetPlotMeta(chan: ZenMaster, figure_config) -> List[ZenPlotMeta]:
     plot_metas = [ZenPlotMeta(chan[kl_type]) for kl_type in chan.lv_list]
     if figure_config.get("only_top_lv", False):
         plot_metas = [plot_metas[0]]

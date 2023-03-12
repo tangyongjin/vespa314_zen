@@ -7,7 +7,7 @@ from Tools.DebugTool import cprint
 
 import pprint
 from BuySellPoint.BS_Point import BuySel_Point
-from ChanConfig import CChanConfig
+from ZenConfig import ZenConfig
 from Common.CEnum import AUTYPE, DATA_SRC, KL_TYPE
 from Common.ChanException import ChanException, ErrCode
 from Common.CTime import CTime
@@ -32,7 +32,7 @@ def GetStockAPI(src):
     return eval(cls_name)
 
 
-class CChan:
+class ZenMaster:
     def __init__(
         self,
         code,
@@ -54,7 +54,7 @@ class CChan:
         self.lv_list: List[KL_TYPE] = lv_list
 
         if config is None:
-            config = CChanConfig()
+            config = ZenConfig()
         self.conf = config
 
         self.kl_misalign_cnt = 0

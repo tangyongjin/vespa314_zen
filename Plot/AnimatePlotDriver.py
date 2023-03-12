@@ -1,13 +1,13 @@
 import matplotlib.pyplot as plt
 from IPython.display import clear_output, display
 
-from Chan import CChan
+from ZenMaster import ZenMaster
 
 from .PlotDriver import CPlotDriver
 
 
-class CAnimateDriver:
-    def __init__(self, chan: CChan, plot_config=None, plot_para=None):
+class AnimateDriver:
+    def __init__(self, chan: ZenMaster, plot_config=None, plot_para=None):
         if plot_config is None:
             plot_config = {}
         if plot_para is None:

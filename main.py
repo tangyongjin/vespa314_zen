@@ -1,7 +1,7 @@
-from Chan import CChan
-from ChanConfig import CChanConfig
+from ZenMaster import ZenMaster
+from ZenConfig import ZenConfig
 from Common.CEnum import AUTYPE, DATA_SRC, KL_TYPE
-from Plot.AnimatePlotDriver import CAnimateDriver
+from Plot.AnimatePlotDriver import AnimateDriver
 from Plot.PlotDriver import CPlotDriver
 
 if __name__ == "__main__":
@@ -11,7 +11,7 @@ if __name__ == "__main__":
     data_src = DATA_SRC.BAO_STOCK
     lv_list = [KL_TYPE.K_DAY]
 
-    config = CChanConfig({
+    config = ZenConfig({
         "bi_strict": True,
         "triger_step": False,
         "skip_step": 0,
@@ -50,7 +50,7 @@ if __name__ == "__main__":
             "x_range": 50,
         },
     }
-    chan = CChan(
+    chan = ZenMaster(
         code=code,
         begin_time=begin_time,
         end_time=end_time,
@@ -68,7 +68,7 @@ if __name__ == "__main__":
         )
         plot_driver.figure.show()
     else:
-        CAnimateDriver(
+        AnimateDriver(
             chan,
             plot_config=plot_config,
             plot_para=plot_para,

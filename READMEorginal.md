@@ -34,9 +34,9 @@
     - [特殊名词/变量名解释](#特殊名词变量名解释)
     - [使用 demo](#使用-demo)
     - [CChan 类介绍](#cchan-类介绍)
-    - [CChanConfig 配置](#cchanconfig-配置)
+    - [ZenConfig 配置](#cchanconfig-配置)
       - [精确设置配置](#精确设置配置)
-      - [CChanConfig 配置 Demo](#cchanconfig-配置-demo)
+      - [ZenConfig 配置 Demo](#cchanconfig-配置-demo)
     - [画图配置](#画图配置)
       - [plot\_config](#plot_config)
       - [plot\_para](#plot_para)
@@ -393,7 +393,7 @@ def _log_trade(title, *msg):
 - klu：K Line Unit 的简称，表示单根K线
 - klc：K Line Combine 的简称，表示合并后的K线（不再有 open，close 价格属性）
 - bsp：Buy Sell Point 买卖点的简称，本项目中特指形态学中的买卖点，是根据走势和定义可以计算出来过去各个买卖点的位置，即一定正确的那一些；
-- cbsp：Custom Buy Sell Point 自定义买卖点的简称，由用户自己编写策略（通过实现 CChanConfig 中的 cbsp_stragety 参数）产生的交易点，该策略类在每根新K线出现时判断当下是否是新的买卖点（即仅有到当下为止的K线数据），一般而言，相较于 bsp 会延后，而且不一定正确；
+- cbsp：Custom Buy Sell Point 自定义买卖点的简称，由用户自己编写策略（通过实现 ZenConfig 中的 cbsp_stragety 参数）产生的交易点，该策略类在每根新K线出现时判断当下是否是新的买卖点（即仅有到当下为止的K线数据），一般而言，相较于 bsp 会延后，而且不一定正确；
 
 比如下图表述的就是 1，2，3 类 bsp：
 
@@ -410,16 +410,16 @@ def _log_trade(title, *msg):
 
 ### 使用 demo
 ```python
-from Chan import CChan
-from ChanConfig import CChanConfig
+from ZenMaster import ZenMaster
+from ZenConfig import ZenConfig
 from ChanModel.XGBModel import CXGBModel
 from Common.CEnum import AUTYPE, KL_TYPE
 from Config.EnvConfig import Env
 from CustomBuySellPoint.CustomStragety import CCustomStragety
-from Plot.AnimatePlotDriver import CAnimateDriver
+from Plot.AnimatePlotDriver import AnimateDriver
 from Plot.PlotDriver import CPlotDriver
 
-config = CChanConfig({})  # 缠论计算配置，见后文
+config = ZenConfig({})  # 缠论计算配置，见后文
 
 chan = CChan(
     code="HK.00700",
@@ -470,7 +470,7 @@ if not config.triger_step:  # 绘制静态图
         plot_para=plot_para,
     )
 else:  # 绘制动画
-    CAnimateDriver(
+    AnimateDriver(
         chan,
         plot_config=plot_config,
         plot_para=plot_para,
@@ -480,7 +480,7 @@ else:  # 绘制动画
 需要计算缠论相关数据，仅需 CChan 调用那一行；
 如果需要画图:
 - 单幅图使用 `CPlotDriver`
-- 如果需要看回放动画，则使用 `CAnimateDriver`
+- 如果需要看回放动画，则使用 `AnimateDriver`
 
 <img src="./Image/chan.py_image_5.png" />
 
@@ -513,7 +513,7 @@ else:  # 绘制动画
     - AUTYPE.QFQ
     - AUTYPE.HFQ
     - AUTYPE.NONE
-- config：`CChanConfig` 类，缠论元素计算参数配置，参见下文 `CChanConfig`
+- config：`ZenConfig` 类，缠论元素计算参数配置，参见下文 `ZenConfig`
 - extra_kl：额外K线，常用于补充 `data_src` 的数据，比如离线 `data_src` 只有到昨天为止的数据，今天开仓需要加上今天实时获得的部分K线数据；默认为 None；
     - 如果是个列表：每个元素必须为描述 klu 的 `KLineOrginal` 类；此时如果 `lv_list` 参数有多个级别，则会报错
     - 如果是个字典，key 是 `lv_list` 参数里面的每个级别，value 是数组，每个元素是 `KLineOrginal` 类
@@ -524,8 +524,8 @@ else:  # 绘制动画
 
 >  如果只有一个级别，可以省去 KL_TYPE，直接使用 `CChan[0].bi_list` 这种调用方法
 
-### CChanConfig 配置
-该参数主要用于配置计算逻辑，通过字典初始化 `CChanConfig` 即可，支持配置参数如下：
+### ZenConfig 配置
+该参数主要用于配置计算逻辑，通过字典初始化 `ZenConfig` 即可，支持配置参数如下：
 - 缠论计算相关：
     - 中枢
       - zs_combine：是否进行中枢合并，默认为 True
@@ -557,7 +557,7 @@ else:  # 绘制动画
     - trend_metrics：计算上下轨道线周期，即 T 天内最高/低价格（用于生成特征及绘图时使用），默认为空[]
     - boll_n：布林线参数 N，整数，默认为 20（用于生成特征及绘图时使用）
     - triger_step：是否回放逐步返回，默认为 False
-        - 用于逐步回放绘图时使用，此时 CChan 会变成一个生成器，每读取一根新K线就会计算一次当前所有指标，返回当前帧指标状况；常用于返回给 CAnimateDriver 绘图
+        - 用于逐步回放绘图时使用，此时 CChan 会变成一个生成器，每读取一根新K线就会计算一次当前所有指标，返回当前帧指标状况；常用于返回给 AnimateDriver 绘图
     - skip_step：triger_step 为 True 时有效，指定跳过前面几根K线，默认为 0；
     - kl_data_check：是否需要检验K线数据，检查项包括时间线是否有乱序，大小级别K线是否有缺失；默认为 True
     - max_kl_misalgin_cnt：在次级别找不到K线最大条数，默认为 2（次级别数据有缺失），`kl_data_check` 为 True 时生效
@@ -633,9 +633,9 @@ else:  # 绘制动画
 - 后面加 `-seg`：对『线段』的买卖点同时生效
 - 后面啥也没加：对『笔』『线段』的买卖点同时生效
 
-#### CChanConfig 配置 Demo
+#### ZenConfig 配置 Demo
 ```python
-config = CChanConfig({
+config = ZenConfig({
     "zs_combine": True,
     "zs_combine_mode": "zs",
     "bi_strict": True,
@@ -661,7 +661,7 @@ config = CChanConfig({
 
 ### 画图配置
 #### plot_config
-CPlotDriver 和 CAnimateDriver 参数，用于控制绘制哪些元素
+CPlotDriver 和 AnimateDriver 参数，用于控制绘制哪些元素
 
 - plot_kline：画K线，默认为 False
 - plot_kline_combine：画合并K线，默认为 False
@@ -753,7 +753,7 @@ CPlotDriver 和 CAnimateDriver 参数，用于控制绘制哪些元素
 
 <img src="./Image/chan.py_image_11.png" />
 
-- eigen:  特征序列（`CChanConfig` 中 `seg_algo` 设置为 `chan` 时有效）
+- eigen:  特征序列（`ZenConfig` 中 `seg_algo` 设置为 `chan` 时有效）
     - color_top: 'r'  顶分型颜色
     - color_bottom: 'b'  底分型颜色
     - aplha: 0.5  透明度
@@ -778,7 +778,7 @@ CPlotDriver 和 CAnimateDriver 参数，用于控制绘制哪些元素
     - plot_cover: True  绘制策略平仓的点
     - adjust_text: False  cbsp 描述文本是否需要自动调整位置防止重叠，默认为 False（配置后将不会重新拉伸纵轴，可能出现文本被挤到绘图框外的情况，如果 cbsp 数量不多，建议配置）
     - only_segbsp: False  只标示出来同时是线段买卖点的 cbsp
-    - show_profit: True  显示收益率（需要开启 `CChanConfig` 中 `cal_cover`）
+    - show_profit: True  显示收益率（需要开启 `ZenConfig` 中 `cal_cover`）
 
 <img src="./Image/plot_cbsp.png" />
 
@@ -810,7 +810,7 @@ CPlotDriver 和 CAnimateDriver 参数，用于控制绘制哪些元素
 <img src="./Image/chan.py_image_14.png" />
 
 - channel:  上下轨道
-    - T: None  T 天内的上下轨道，必须在 `CChanConfig.trend_metrics` 中出现，如果为 None，则为 `CChanConfig.trend_metrics` 的最大值
+    - T: None  T 天内的上下轨道，必须在 `ZenConfig.trend_metrics` 中出现，如果为 None，则为 `ZenConfig.trend_metrics` 的最大值
     - top_color: 'r'  上轨道颜色
     - bottom_color: 'b'  下轨道颜色
     - linewidth: 3  轨道线宽度
@@ -853,7 +853,7 @@ CPlotDriver 和 CAnimateDriver 参数，用于控制绘制哪些元素
 
 【可选】有了模型，什么阈值买点收益更高，模型对哪一类买卖点效果更好，买卖点具备什么属性更适合这个模型；我们可以将模型类注册进 `ModelStragety/parameterEvaluate/para_automl.py` 的 AUTOML 框架中，通过对每种参数评估出盈亏比，交易次数，最大回撤，平均收益等诸多指标，然后自己实现一个 `CalScore(eval_res)` 函数，计算出该策略的分值；automl 框架会自动启发式的搜索出最优参数组合；（这个可能需要专门写一篇长文来解释。。。）
 
-有了模型，参考下文『模型接入』实现一个类继承自 `CCommModel`，并设置为配置 `CChanConfig.model`，即可实现对每个 cbsp 进行打分；
+有了模型，参考下文『模型接入』实现一个类继承自 `CCommModel`，并设置为配置 `ZenConfig.model`，即可实现对每个 cbsp 进行打分；
 
 【可选】如果担心接入后线上模型和离线模型特征不一致带来的差异（比如 backtest.py 中笔段的计算起始时间和实盘中的不一样，可能会导致某些特征不相等），可以运行 `ModelStragety/FeatureReconciliation.py` 来进行特征一致性检查；
 
@@ -1069,13 +1069,13 @@ def cal(self, bi_list: BiList, seg_list: SegListComm) -> None:
 ### cbsp 买卖点策略
 本框架支持方便地开发用户自己买卖点策略，比如一买底分型确定时买入这种；
 
-实现方法也很简单，开发一个类继承自 `CStragety`，赋值给 `CChanConfig.cbsp_stragety` 即可；一旦设置，那么每新增一根K线都会调用该类的 `update` 函数来计算当下是否是买卖点，其中 `update` 函数会调用用户开发的 `try_open`(开仓)和 `try_close`（平仓）函数，接受的参数都是 CChan 类（包含所有级别的信息）和 lv（当前级别，`chan[lv]` 为当前级别信息）。
+实现方法也很简单，开发一个类继承自 `CStragety`，赋值给 `ZenConfig.cbsp_stragety` 即可；一旦设置，那么每新增一根K线都会调用该类的 `update` 函数来计算当下是否是买卖点，其中 `update` 函数会调用用户开发的 `try_open`(开仓)和 `try_close`（平仓）函数，接受的参数都是 CChan 类（包含所有级别的信息）和 lv（当前级别，`chan[lv]` 为当前级别信息）。
 
 > 之所以需要传入 CChan 和本级别 lv，是为了可以方便实现类似区间套的策略，计算本级别买卖点时接口可以通过 `chan[lv+1]` 拿到次级别的所有数据
 
 ```python
 class CCustomStragety(CStragety):
-    def __init__(self, conf: CChanConfig):
+    def __init__(self, conf: ZenConfig):
         super(CCustomStragety, self).__init__(conf=conf)
 
     @abc.abstractmethod
@@ -1267,7 +1267,7 @@ class CXGB_DataSet(CDataSet):
 - 调用 `CModelGenerator.predictAllProcess()` 即可用所有模型对回测特征文件进行打分，并生成所需要的分数，特征文件，可以直接对接到本框架提供的 automl 方法中；
 
 #### 模型接入
-为了可以在缠论框架中读取生成的模型，并在计算过程中对 cbsp 进行实时打分，需要实现一个类继承自 `CCommModel`，并设置为配置 `CChanConfig.model`;
+为了可以在缠论框架中读取生成的模型，并在计算过程中对 cbsp 进行实时打分，需要实现一个类继承自 `CCommModel`，并设置为配置 `ZenConfig.model`;
 抽象类如下：
 ```python
 class CCommModel:

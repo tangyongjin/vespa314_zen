@@ -12,7 +12,7 @@ from Seg.SegConfig import SegConfig
 from ZS.ZSConfig import ZSConfig
 
 
-class CChanConfig:
+class ZenConfig:
     def __init__(self, conf=None):
         if conf is None:
             conf = {}
@@ -137,4 +137,4 @@ class ConfigWithCheck:
     def check(self):
         if len(self.conf) > 0:
             invalid_key_lst = ",".join(list(self.conf.keys()))
-            raise ChanException(f"invalid CChanConfig: {invalid_key_lst}", ErrCode.PARA_ERROR)
+            raise ChanException(f"invalid ZenConfig: {invalid_key_lst}", ErrCode.PARA_ERROR)

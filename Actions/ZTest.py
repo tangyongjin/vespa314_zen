@@ -1,8 +1,8 @@
 import os
-from Chan import CChan
-from ChanConfig import CChanConfig
+from ZenMaster import ZenMaster
+from ZenConfig import ZenConfig
 from Common.CEnum import AUTYPE, DATA_SRC, KL_TYPE
-from Plot.AnimatePlotDriver import CAnimateDriver
+from Plot.AnimatePlotDriver import AnimateDriver
 from Plot.PlotDriver import CPlotDriver
 from Tools.DebugTool import cprint
 from colorama import Fore, Back, Style
@@ -33,7 +33,7 @@ async def ZTest():
         data_src = DATA_SRC.BAO_STOCK
         lv_list = [KL_TYPE.K_DAY]
 
-        config = CChanConfig({
+        config = ZenConfig({
             "bi_strict": True,
             "triger_step": False,
             "skip_step": 0,
@@ -98,7 +98,7 @@ async def ZTest():
                 plot_para=plot_para,
             )
         else:
-            plot_driver=CAnimateDriver(
+            plot_driver=AnimateDriver(
                 chan,
                 plot_config=plot_config,
                 plot_para=plot_para,
