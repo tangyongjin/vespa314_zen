@@ -176,10 +176,9 @@ class CPlotDriver:
         for kl in zenPltMeta.klu_iter():
             i = kl.idx
             # print("------------>>")
-            # cprint( kl)
-            # print( kl.time.to_str()) 
+            print(kl)
             kluXdata.append(kl.time.to_str())
-            kluYdata.append([kl.open, kl.close,kl.low,kl.high,kl.low])
+            kluYdata.append([kl.open, kl.close,kl.low,kl.high,kl.volume])
         
         for kl in zenPltMeta.klu_iter():
             i = kl.idx
@@ -213,7 +212,8 @@ class CPlotDriver:
         
         cprint("API结果**********************",Fore.RED)
         # print( zenPltMeta.SegPoints)
-        self.echartsData={ "x":kluXdata,"y": kluYdata , 
+        self.echartsData={ "desc":"open/close/low/high/volume",
+                           "dates":kluXdata,"ohlc": kluYdata , 
                            "BiPoints":zenPltMeta.BiPoints,
                            'SegPoints':zenPltMeta.SegPoints,
                            "ZsAreas":zenPltMeta.ZsAreas,

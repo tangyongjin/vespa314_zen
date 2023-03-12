@@ -12,7 +12,7 @@ from Seg.SegListComm import CSegListComm
 from ZS.ZSList import CZSList
 
 from .KLine import CKLine
-from .KLine_Unit import CKLine_Unit
+from .KLineOrginal import CKLine_Unit
 
 
 def get_seglist_instance(seg_config: CSegConfig, lv) -> CSegListComm:

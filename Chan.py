@@ -14,7 +14,7 @@ from Common.CTime import CTime
 from Common.func_util import check_kltype_order, kltype_lte_day
 from DataAPI.CommonStockAPI import CCommonStockApi
 from KLine.KLine_List import CKLine_List
-from KLine.KLine_Unit import CKLine_Unit
+from KLine.KLineOrginal import CKLine_Unit
 
 
 def GetStockAPI(src):

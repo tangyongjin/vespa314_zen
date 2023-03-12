@@ -1,7 +1,7 @@
 import abc
 from typing import Iterable
 
-from KLine.KLine_Unit import CKLine_Unit
+from KLine.KLineOrginal import CKLine_Unit
 
 
 class CCommonStockApi:

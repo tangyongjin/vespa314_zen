@@ -3,7 +3,7 @@ from typing import Generic, List, Optional, Self, TypeVar
 from Bi.Bi import CBi
 from Common.CEnum import BI_DIR, MACD_ALGO
 from Common.ChanException import CChanException, ErrCode
-from KLine.KLine_Unit import CKLine_Unit
+from KLine.KLineOrginal import CKLine_Unit
 
 from .EigenFX import CEigenFX
 

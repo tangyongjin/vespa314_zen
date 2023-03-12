@@ -142,7 +142,7 @@
 ├── 📁 KLine: K线类
 │   ├── 📄 KLine_List.py: K线列表类
 │   ├── 📄 KLine.py: 合并K线类
-│   ├── 📄 KLine_Unit.py: 单根K线类
+│   ├── 📄 KLineOrginal.py: 单根K线类
 │   └── 📄 TradeInfo.py: K线指标类（换手率，成交量，成交额等）
 ├── 📁 BuySellPoint: 形态学买卖点类（即bsp）
 │   ├── 📄 BSPointConfig.py: 配置

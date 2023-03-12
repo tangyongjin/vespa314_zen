@@ -185,6 +185,7 @@ class Cklc_meta:
     def __init__(self, klc: CKLine):
         self.high = klc.high
         self.low = klc.low
+        # self.volume = klc.volume
         self.begin_idx = klc.lst[0].idx
         self.end_idx = klc.lst[-1].idx
         self.type = klc.fx if klc.fx != FX_TYPE.UNKNOWN else klc.dir

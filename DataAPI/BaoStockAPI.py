@@ -2,7 +2,7 @@ import baostock as bs
 from Common.CEnum import AUTYPE, DATA_FIELD, KL_TYPE
 from Common.CTime import CTime
 from Common.func_util import kltype_lt_day, str2float
-from KLine.KLine_Unit import CKLine_Unit
+from KLine.KLineOrginal import CKLine_Unit
 import pandas as pd
 import copy
 import pprint
@@ -71,6 +71,9 @@ def printRawLineData(rs):
         pd.set_option('display.max_columns', None)
         pd.set_option('display.width', 10000)
         cprint(result    )
+        # print rows counter of result
+        counter = len(result)
+        print('BaoStockAPI.py:76 >>>>>>>>>>>>>>>>>>>##### 结果集输出完毕，输出行数：', counter, ' ####<<<<<<<<<<<<<<<<')
         pass
 
 
